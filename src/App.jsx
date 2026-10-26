@@ -73,15 +73,28 @@ function App() {
                 const data = JSON.parse(eventStr.substring(6));
 
                 setMessages(prev => {
+                  if (prev.length === 0) return prev;
                   const newMessages = [...prev];
-                  const currentMsg = newMessages[newMessages.length - 1];
+                  const lastIdx = newMessages.length - 1;
+                  const prevMsg = newMessages[lastIdx];
+                  const currentMsg = {
+                    ...prevMsg,
+                    reasoning: prevMsg.reasoning ? [...prevMsg.reasoning] : []
+                  };
 
                   if (data.type === 'final_answer') {
                     currentMsg.content = data.content;
                   } else {
-                    currentMsg.reasoning.push(data);
+                    // Prevent duplicate trace cards caused by React StrictMode double invocation
+                    const isDuplicate = currentMsg.reasoning.some(
+                      r => r.type === data.type && r.content === data.content && r.details === data.details
+                    );
+                    if (!isDuplicate) {
+                      currentMsg.reasoning.push(data);
+                    }
                   }
 
+                  newMessages[lastIdx] = currentMsg;
                   return newMessages;
                 });
               } catch (err) {

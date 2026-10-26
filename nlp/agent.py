@@ -100,6 +100,7 @@ class NBAAgent:
                 response = chat.send_message(query)
                 
                 # Allow up to 8 iterations to accommodate doc searching + execution
+                executed_tools = {}
                 for _ in range(8):
                     function_call_part = None
                     text_thoughts = []
@@ -128,104 +129,109 @@ class NBAAgent:
                             "details": json.dumps(args)
                         }
                         
-                        # Execute the actual API call
-                        from core.telemetry import TelemetryManager
-                        with TelemetryManager.start_span("deepbag.tool_execution", {"tool.name": function_name}) as tool_span:
-                            try:
-                                if function_name == "query_historical_database":
-                                    from nlp.sql_tool import HistoricalSQLTool
-                                    sql_tool = HistoricalSQLTool()
-                                    raw_result = sql_tool.execute_sql(args.get("sql_query", ""))
-                                    summary = raw_result
-                                elif function_name == "search_api_docs":
-                                    summary = meta_executor.search_api_docs(args.get("keywords", ""))
-                                elif function_name == "call_nba_api":
-                                    from core.schemas import ToolCallInvocation
-                                    invocation = ToolCallInvocation(
-                                        endpoint_name=args.get("endpoint_name", ""),
-                                        parameters=args.get("parameters", {})
-                                    )
-                                    raw_result = execute_api_call(invocation.endpoint_name, invocation.parameters)
-                                    summary = self.summarize_result(raw_result)
-                                else:
-                                    summary = {"error": f"Unknown function {function_name}"}
-
-                                row_count = 0
-                                if isinstance(summary, dict) and "error" not in summary:
-                                    if function_name == "search_api_docs" and "matching_endpoints" in summary:
-                                        row_count = len(summary["matching_endpoints"])
-                                    else:
-                                        for k, v in summary.items():
-                                            if isinstance(v, dict) and "total_rows_available" in v:
-                                                row_count = max(row_count, v["total_rows_available"])
-                                            
-                                yield {
-                                    "type": "tool_result", 
-                                    "content": f"Received {row_count} rows from API."
-                                }
-                                
-                                # Explicitly build Protobuf Struct to avoid whichOneof dict inference errors
-                                from google.protobuf.struct_pb2 import Struct
-                                from google.protobuf import json_format
-                                
-                                clean_summary = json.loads(json.dumps(summary))
-                                
-                                s = Struct()
+                        tool_key = (function_name, json.dumps(args, sort_keys=True))
+                        if tool_key in executed_tools:
+                            yield {"type": "thought", "content": f"Reusing cached tool result for {function_name} in current query..."}
+                            summary = executed_tools[tool_key]
+                        else:
+                            # Execute the actual API call
+                            from core.telemetry import TelemetryManager
+                            with TelemetryManager.start_span("deepbag.tool_execution", {"tool.name": function_name}) as tool_span:
                                 try:
-                                    json_format.ParseDict({"result": clean_summary}, s)
-                                except Exception as parse_e:
-                                    yield {"type": "thought", "content": f"Protobuf Parse Error: {parse_e}"}
-                                    s = Struct()
-                                    json_format.ParseDict({"error": str(parse_e)}, s)
-
-                                part = genai.protos.Part(
-                                    function_response=genai.protos.FunctionResponse(
-                                        name=function_name,
-                                        response=s
-                                    )
-                                )
-                                
-                                try:
-                                    response = chat.send_message(part)
-                                except Exception as send_err:
-                                    # Fallback if SDK or model requires thought_signature on function_response
-                                    if "thought_signature" in str(send_err).lower() or "400" in str(send_err):
-                                        if len(chat.history) > 2:
-                                            chat.history.pop()
-                                        fallback_prompt = (
-                                            f"Tool '{function_name}' returned the following result:\n"
-                                            f"{json.dumps(clean_summary)}\n\n"
-                                            "Based on this data, please provide your final data-backed answer and analysis for the user."
+                                    if function_name == "query_historical_database":
+                                        from nlp.sql_tool import HistoricalSQLTool
+                                        sql_tool = HistoricalSQLTool()
+                                        raw_result = sql_tool.execute_sql(args.get("sql_query", ""))
+                                        summary = raw_result
+                                    elif function_name == "search_api_docs":
+                                        summary = meta_executor.search_api_docs(args.get("keywords", ""))
+                                    elif function_name == "call_nba_api":
+                                        from core.schemas import ToolCallInvocation
+                                        invocation = ToolCallInvocation(
+                                            endpoint_name=args.get("endpoint_name", ""),
+                                            parameters=args.get("parameters", {})
                                         )
-                                        response = chat.send_message(fallback_prompt)
+                                        raw_result = execute_api_call(invocation.endpoint_name, invocation.parameters)
+                                        summary = self.summarize_result(raw_result)
                                     else:
-                                        raise send_err
-                                
-                            except Exception as e:
-                                yield {"type": "thought", "content": f"Tool Execution Error: {e}"}
-                                from google.protobuf.struct_pb2 import Struct
-                                from google.protobuf import json_format
-                                s = Struct()
-                                json_format.ParseDict({"error": str(e)}, s)
-                                
-                                error_part = genai.protos.Part(
-                                    function_response=genai.protos.FunctionResponse(
-                                        name=function_name,
-                                        response=s
-                                    )
-                                )
-                                
-                                try:
-                                    response = chat.send_message(error_part)
-                                except Exception as err_send_err:
-                                    if "thought_signature" in str(err_send_err).lower() or "400" in str(err_send_err):
-                                        if len(chat.history) > 2:
-                                            chat.history.pop()
-                                        fallback_prompt = f"Tool '{function_name}' returned an error: {e}. Please answer the user with the best available data."
-                                        response = chat.send_message(fallback_prompt)
-                                    else:
-                                        raise err_send_err
+                                        summary = {"error": f"Unknown function {function_name}"}
+                                    
+                                    executed_tools[tool_key] = summary
+                                except Exception as exec_err:
+                                    summary = {"error": str(exec_err)}
 
+                        if isinstance(summary, dict) and "error" in summary:
+                            result_msg = f"Tool Notice: {summary['error']}"
+                        elif function_name == "search_api_docs":
+                            endpoints = summary.get("matching_endpoints", [])
+                            ep_names = [e.get("endpoint_name") for e in endpoints]
+                            result_msg = f"Found {len(endpoints)} matching endpoint schemas: {', '.join(ep_names)}."
+                        elif function_name == "query_historical_database":
+                            if isinstance(summary, list):
+                                row_count = len(summary)
+                            elif isinstance(summary, dict):
+                                row_count = len(summary.get("data", summary.get("rows", [])))
+                            else:
+                                row_count = 0
+                            result_msg = f"Retrieved {row_count} rows from historical database."
+                        elif function_name == "call_nba_api":
+                            row_count = 0
+                            if isinstance(summary, dict):
+                                for k, v in summary.items():
+                                    if isinstance(v, dict) and "total_rows_available" in v:
+                                        row_count = max(row_count, v["total_rows_available"])
+                            result_msg = f"Received {row_count} rows from NBA API ({args.get('endpoint_name')})."
+                        else:
+                            result_msg = "Tool execution completed."
+
+                        yield {
+                            "type": "tool_result", 
+                            "content": result_msg
+                        }
+                        
+                        # Explicitly build Protobuf Struct to avoid whichOneof dict inference errors
+                        from google.protobuf.struct_pb2 import Struct
+                        from google.protobuf import json_format
+                        
+                        clean_summary = json.loads(json.dumps(summary))
+                        
+                        s = Struct()
+                        try:
+                            json_format.ParseDict({"result": clean_summary}, s)
+                        except Exception as parse_e:
+                            yield {"type": "thought", "content": f"Protobuf Parse Error: {parse_e}"}
+                            s = Struct()
+                            json_format.ParseDict({"error": str(parse_e)}, s)
+
+                        part = genai.protos.Part(
+                            function_response=genai.protos.FunctionResponse(
+                                name=function_name,
+                                response=s
+                            )
+                        )
+                        
+                        try:
+                            response = chat.send_message(part)
+                        except Exception as send_err:
+                            # Fallback if SDK or model requires thought_signature on function_response
+                            if "thought_signature" in str(send_err).lower() or "400" in str(send_err):
+                                if len(chat.history) > 2:
+                                    chat.history.pop()
+                                if function_name == "search_api_docs":
+                                    fallback_prompt = (
+                                        f"Documentation schemas found via 'search_api_docs':\n"
+                                        f"{json.dumps(clean_summary)}\n\n"
+                                        "Now, proceed to invoke 'call_nba_api' with the chosen endpoint_name and required parameters to fetch the live stats."
+                                    )
+                                else:
+                                    fallback_prompt = (
+                                        f"Tool '{function_name}' returned the following data:\n"
+                                        f"{json.dumps(clean_summary)}\n\n"
+                                        "Based on this data, please provide your final data-backed answer and analysis for the user (including Chart.js block if appropriate)."
+                                    )
+                                response = chat.send_message(fallback_prompt)
+                            else:
+                                raise send_err
                     else:
                         # Model returned text, we are done
                         try:
