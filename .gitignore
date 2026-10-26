@@ -9,3 +9,6 @@ htmlcov/
 *.db
 !query_cache.db
 .DS_Store
+node_modules/
+dist/
+

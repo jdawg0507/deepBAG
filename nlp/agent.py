@@ -55,7 +55,22 @@ class NBAAgent:
         4. PARAMETER FIXING: The current active NBA season is {current_season}. If an endpoint requires a 'Season' parameter, it usually expects '{current_season}'.
         5. ERROR RECOVERY: If a tool returns 0 rows, it may be a network timeout (e.g. ReadTimeout). You can try again or search for a different endpoint.
         6. HISTORICAL QUERIES: If the user asks for historical data (anything before {current_season}), you MUST use 'query_historical_database' against the local Kaggle dataset.
+        7. INTERACTIVE CHARTS: When answering queries that involve comparisons between players/teams, last N game scoring/rebounding trends, or multi-stat profiles, include an interactive Chart.js visualization in your markdown using a ```chart code block with valid JSON:
+        ```chart
+        {{
+          "type": "bar" | "line" | "radar",
+          "title": "Descriptive Chart Title",
+          "data": {{
+            "labels": ["Label 1", "Label 2"],
+            "datasets": [
+              {{ "label": "Series Name", "data": [10, 20] }}
+            ]
+          }}
+        }}
+        ```
+        Omit chart blocks for simple single-fact lookups.
         """
+
         
         models_to_try = [self.model_name] + self.fallback_models
         from nlp.meta_tools import MetaToolExecutor
