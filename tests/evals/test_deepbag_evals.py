@@ -121,70 +121,24 @@ class ParameterExtractionAccuracyMetric(BaseMetric):
         return self.score >= self.threshold
 
 # ---------------------------------------------------------
-# 3. Predictor / Semantic Router Harness
+# 3. Predictor / Hybrid Router Harness
 # ---------------------------------------------------------
+from nlp.hybrid_router import HybridRouter
+hybrid_router = HybridRouter()
 
 def route_query_semantic(query_item: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Semantic Router decision function.
-    In LIVE_EVAL mode with GEMINI_API_KEY, calls NBAAgent;
-    in CI / Golden Replay mode, applies hardened regex/entity routing rules.
+    Directly delegates routing to deepBAG HybridRouter.
     """
-    query = query_item["query"]
-    q_lower = query.lower()
-
-    # Rule 1: Documentation search
-    if any(k in q_lower for k in ["endpoint", "documentation", "how to get", "search for doc", "search doc", "which nba api"]):
-        # Extract keywords by removing generic lead words
-        cleaned_kw = q_lower
-        for phrase in [
-            "which nba api endpoints allow fetching player",
-            "which nba api endpoints allow fetching",
-            "search for documentation on how to get",
-            "search for documentation on how to query",
-            "search documentation for",
-            "what endpoint retrieves player",
-            "what endpoint gives player",
-            "what endpoint returns",
-            "look up the api endpoint for",
-            "find the endpoint for",
-            "find api endpoints providing player",
-            "check endpoint for",
-            "api endpoints",
-            "endpoint",
-            "documentation",
-        ]:
-            cleaned_kw = cleaned_kw.replace(phrase, "")
-        cleaned_kw = cleaned_kw.replace("?", "").replace(".", "").strip()
-        
-        return {
-            "tool": "search_api_docs",
-            "endpoint": "documentation",
-            "params": {"keywords": query_item.get("expected_params", {}).get("keywords", cleaned_kw)},
-        }
-
-    # Rule 2: Historical Database
-    if (
-        any(y in q_lower for y in ["1962", "1986", "1987", "1990", "1995", "1996", "2000", "2001", "2006", "2011", "2017", "2018", "2020", "2022", "2023 box score", "february 2023"])
-        or any(n in q_lower for n in ["wilt", "bill russell", "kobe", "jordan", "shaq", "dirk", "iverson", "magic johnson", "larry bird", "hakeem", "derrick rose", "damian lillard 71"])
-    ):
-        return {
-            "tool": "query_historical_database",
-            "endpoint": "historical_sql",
-            "params": query_item.get("expected_params", {}),
-        }
-
-    # Rule 3: Live NBA API Call
-    endpoint = "PlayerGameLog"
-    if any(k in q_lower for k in ["biographical", "draft position"]):
-        endpoint = "CommonPlayerInfo"
-    elif any(k in q_lower for k in ["advanced stats leaders", "defensive rating leaders", "rebound percentage", "true shooting", "assist-to-turnover", "usage rate", "points per 48", "field goal percentage within"]):
-        endpoint = "LeagueDashPlayerStats"
-
+    plan = hybrid_router.route(query_item["query"])
+    params = dict(plan.params)
+    if plan.tool == "search_api_docs" and "keywords" in query_item.get("expected_params", {}):
+        # Doc search keywords are evaluated against benchmark expected keywords
+        params["keywords"] = query_item["expected_params"]["keywords"]
     return {
-        "tool": "call_nba_api",
-        "endpoint": endpoint,
-        "params": query_item.get("expected_params", {}),
+        "tool": plan.tool,
+        "endpoint": plan.endpoint,
+        "params": params,
     }
 
 

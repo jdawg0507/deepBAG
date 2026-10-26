@@ -52,3 +52,61 @@ def test_cache_ttl_expiration():
     assert cache.get(query) == "Temporary data"
     time.sleep(1.2)
     assert cache.get(query) is None
+
+def test_canonical_key_generation():
+    key1 = RedisQueryCache.make_canonical_key(
+        endpoint="PlayerGameLog",
+        params={"PlayerID": 2544, "Season": "2023-24", "SeasonType": "Regular Season"},
+    )
+    # Different param order should produce the exact same key
+    key2 = RedisQueryCache.make_canonical_key(
+        endpoint="playergamelog",
+        params={"SeasonType": "Regular Season", "Season": "2023-24", "PlayerID": "2544"},
+    )
+    assert key1 == key2
+    assert key1.startswith("deepbag:api:playergamelog:")
+
+    # Different param value should produce different key
+    key3 = RedisQueryCache.make_canonical_key(
+        endpoint="PlayerGameLog",
+        params={"PlayerID": 201939, "Season": "2023-24"},
+    )
+    assert key1 != key3
+
+def test_season_state_ttl():
+    # Historical seasons should get 30-day TTL (2592000s)
+    assert RedisQueryCache.get_season_ttl("2022-23") == 30 * 86400
+    assert RedisQueryCache.get_season_ttl("2015-16") == 30 * 86400
+
+    # Current / active seasons should get 12-hour TTL (43200s)
+    assert RedisQueryCache.get_season_ttl("2024-25") == 12 * 3600
+    assert RedisQueryCache.get_season_ttl("2025-26") == 12 * 3600
+    assert RedisQueryCache.get_season_ttl(None) == 12 * 3600
+
+def test_canonical_api_data_caching():
+    cache = RedisQueryCache()
+    endpoint = "PlayerGameLog"
+    params = {"PlayerID": 2544, "Season": "2022-23"}
+    data = [{"GAME_DATE": "2023-01-15", "PTS": 35}]
+
+    # Initial miss
+    assert cache.get_api_data(endpoint, params) is None
+
+    # Set API data
+    assert cache.set_api_data(endpoint, params, data) is True
+
+    # Cache hit
+    cached = cache.get_api_data(endpoint, params)
+    assert cached == data
+
+@pytest.mark.asyncio
+async def test_async_canonical_api_data_caching():
+    cache = RedisQueryCache()
+    endpoint = "CommonPlayerInfo"
+    params = {"PlayerID": 201939}
+    data = {"DISPLAY_FIRST_LAST": "Stephen Curry", "TEAM_NAME": "Warriors"}
+
+    assert await cache.aget_api_data(endpoint, params) is None
+    assert await cache.aset_api_data(endpoint, params, data) is True
+    assert await cache.aget_api_data(endpoint, params) == data
+

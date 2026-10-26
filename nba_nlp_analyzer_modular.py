@@ -40,19 +40,20 @@ class NBAQueryAnalyzer:
         self.endpoint_selector = EndpointSelector(self.model, self.endpoint_library)
         self.response_formatter = ResponseFormatter(self.model)
         
-        # Initialize Agentic components
-        print("Initializing Agentic components...")
+        # Initialize Agentic & Hybrid components
+        print("Initializing Hybrid Architecture components...")
         self.tool_retriever = EndpointToolRetriever(self.endpoint_library)
         self.tool_builder = EndpointToolBuilder(self.endpoint_library)
         self.agent = NBAAgent()
         self.cache = RedisQueryCache()
+        from nlp.hybrid_router import HybridRouter
+        from nlp.synthesizer import Synthesizer
+        self.hybrid_router = HybridRouter(self.endpoint_library)
+        self.synthesizer = Synthesizer()
     
     def process_query_agentic(self, query, model_name=None):
-        """Process an NBA stats query using the new Gemini Function Calling Agent"""
-        print(f"\nProcessing query (Agentic, model={model_name or 'default'}): {query}")
-        
-        from nlp.meta_tools import get_meta_tools_declarations
-        from nlp.sql_tool import get_sql_tool_declaration
+        """Process an NBA stats query using the hybrid direct-code router + 1-turn synthesis architecture"""
+        print(f"\nProcessing query (Hybrid, model={model_name or 'default'}): {query}")
         
         # 1. Distributed Cache Lookup with Telemetry
         with TelemetryManager.start_span("deepbag.cache_lookup", {"query": query}) as cache_span:
@@ -66,25 +67,79 @@ class NBAQueryAnalyzer:
             TelemetryManager.record_cache_event(hit=False, query=query)
             
         try:
-            with TelemetryManager.start_span("deepbag.agentic_route_resolution", {"query": query, "model": model_name or "default"}) as route_span:
-                # 2. Build the static list of tools (Meta-Tools + SQL Tool)
-                tools = get_meta_tools_declarations()
-                tools.append(get_sql_tool_declaration())
-                    
-                # 3. Run the Agentic Loop (Streaming)
-                final_text = ""
-                for event in self.agent.run_stream(query, tools, self.endpoint_library, model_name=model_name):
-                    yield event
+            # 2. Local Route Resolution in Python code (0 LLM calls!)
+            with TelemetryManager.start_span("deepbag.local_routing", {"query": query}) as route_span:
+                plan = self.hybrid_router.route(query)
+                yield {"type": "thought", "content": f"Resolved route deterministically in code -> {plan.tool} ({plan.endpoint}). Reason: {plan.reason}"}
 
+            final_text = ""
+            
+            # 3. Direct Code Dispatch
+            if plan.tool == "search_api_docs":
+                yield {"type": "tool_call", "tool": "search_api_docs", "params": plan.params}
+                from nlp.meta_tools import MetaToolExecutor
+                executor = MetaToolExecutor(self.endpoint_library)
+                data = executor.search_api_docs(plan.params.get("keywords", ""))
+                yield {"type": "tool_result", "tool": "search_api_docs", "result": data}
+                
+                # 4. 1-Turn Synthesis
+                for event in self.synthesizer.synthesize(query, data, endpoint_name="Documentation", model_name=model_name):
+                    yield event
                     if event.get("type") == "final_answer":
                         final_text = event.get("content", "")
+
+            elif plan.tool == "query_historical_database":
+                yield {"type": "tool_call", "tool": "query_historical_database", "params": {"sql_query": plan.sql_query}}
+                from nlp.sql_tool import HistoricalSQLTool
+                sql_tool = HistoricalSQLTool()
+                data = sql_tool.execute_sql(plan.sql_query or "")
+                yield {"type": "tool_result", "tool": "query_historical_database", "result": data}
                 
-                # Save final response to cache if valid
-                if final_text and not final_text.startswith("Error"):
-                    self.cache.set(query, final_text)
-            
+                # 4. 1-Turn Synthesis
+                for event in self.synthesizer.synthesize(query, data, endpoint_name="Historical SQLite DB", model_name=model_name):
+                    yield event
+                    if event.get("type") == "final_answer":
+                        final_text = event.get("content", "")
+
+            elif plan.tool == "call_nba_api":
+                # Check Tier 1 Canonical Cache
+                with TelemetryManager.start_span("deepbag.canonical_cache", {"endpoint": plan.endpoint, "params": json.dumps(plan.params)}) as cache_span:
+                    cached_data = self.cache.get_api_data(plan.endpoint, plan.params, season=plan.season)
+                
+                if cached_data is not None:
+                    yield {"type": "thought", "content": f"Found canonical cache hit for {plan.endpoint}. Skipping upstream NBA API call."}
+                    data = cached_data
+                else:
+                    yield {"type": "tool_call", "tool": "call_nba_api", "params": {"endpoint_name": plan.endpoint, "parameters": plan.params}}
+                    with TelemetryManager.start_span("deepbag.api_dispatch", {"endpoint": plan.endpoint}) as dispatch_span:
+                        data = execute_api_call(plan.endpoint, plan.params)
+                    if not (isinstance(data, dict) and "error" in data):
+                        self.cache.set_api_data(plan.endpoint, plan.params, data, season=plan.season)
+                    yield {"type": "tool_result", "tool": "call_nba_api", "result": self.agent.summarize_result(data) if isinstance(data, dict) else data}
+                
+                # 4. 1-Turn Synthesis
+                for event in self.synthesizer.synthesize(query, data, endpoint_name=plan.endpoint, model_name=model_name):
+                    yield event
+                    if event.get("type") == "final_answer":
+                        final_text = event.get("content", "")
+
+            else:
+                # Agent Fallback
+                from nlp.meta_tools import get_meta_tools_declarations
+                from nlp.sql_tool import get_sql_tool_declaration
+                tools = get_meta_tools_declarations()
+                tools.append(get_sql_tool_declaration())
+                for event in self.agent.run_stream(query, tools, self.endpoint_library, model_name=model_name):
+                    yield event
+                    if event.get("type") == "final_answer":
+                        final_text = event.get("content", "")
+
+            # Save synthesized response to Tier 2 Cache
+            if final_text and not final_text.startswith("Error"):
+                self.cache.set(query, final_text)
+
         except Exception as e:
-            print(f"Error in agentic processing: {str(e)}")
+            print(f"Error in hybrid processing: {str(e)}")
             import traceback
             traceback.print_exc()
             yield {"type": "final_answer", "content": f"Error: {str(e)}"}

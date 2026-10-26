@@ -97,7 +97,172 @@ class RedisQueryCache:
         query_hash = hashlib.sha256(normalized.encode("utf-8")).hexdigest()
         return f"{self.key_prefix}{query_hash}"
 
-    # Sync Interface (for synchronous analyzer/agent steps)
+    @staticmethod
+    def get_season_ttl(season_str: Optional[str] = None) -> int:
+        """
+        Calculates TTL based on whether the season is completed/historical or active.
+        Historical seasons (<= 2023-24): 30 days (immutable).
+        Active/current seasons (>= 2024-25 or None): 12 hours.
+        """
+        import re
+        if not season_str:
+            return 12 * 3600  # 12 hours for current/unspecified
+
+        match = re.search(r"(\d{4})", str(season_str))
+        if match:
+            start_year = int(match.group(1))
+            # Current seasons are 2024-25 and newer
+            if start_year < 2024:
+                return 30 * 86400  # 30 days
+        return 12 * 3600
+
+    @classmethod
+    def make_canonical_key(
+        cls,
+        endpoint: str,
+        params: Optional[Dict[str, Any]] = None,
+        season: Optional[str] = None,
+        prefix: str = "deepbag:api:",
+    ) -> str:
+        """
+        Generate a canonical cache key for an API call based on endpoint and sorted params.
+        """
+        cleaned_params = {}
+        if params:
+            for k, v in params.items():
+                if k not in ("proxy", "headers", "timeout", "get_request"):
+                    cleaned_params[k] = str(v).strip()
+        
+        # If season not explicit, extract from params if present
+        if not season:
+            for key in ("Season", "season", "season_id", "SeasonId"):
+                if key in cleaned_params:
+                    season = cleaned_params[key]
+                    break
+        
+        sorted_items = sorted(cleaned_params.items())
+        param_payload = json.dumps({"params": sorted_items, "season": season}, sort_keys=True)
+        param_hash = hashlib.sha256(param_payload.encode("utf-8")).hexdigest()
+        norm_endpoint = endpoint.strip().lower()
+        return f"{prefix}{norm_endpoint}:{param_hash}"
+
+    # Tier 1: Canonical API Data Caching
+    def get_api_data(
+        self,
+        endpoint: str,
+        params: Optional[Dict[str, Any]] = None,
+        season: Optional[str] = None,
+    ) -> Optional[Any]:
+        cache_key = self.make_canonical_key(endpoint, params, season)
+        try:
+            val = self._sync_client.get(cache_key)
+            if val is not None:
+                self.stats["hits"] += 1
+                try:
+                    payload = json.loads(val)
+                    return payload.get("data")
+                except json.JSONDecodeError:
+                    return val
+            self.stats["misses"] += 1
+            return None
+        except Exception as e:
+            logger.error(f"Error reading API data from sync cache: {e}")
+            self.stats["misses"] += 1
+            return None
+
+    def set_api_data(
+        self,
+        endpoint: str,
+        params: Optional[Dict[str, Any]],
+        data: Any,
+        season: Optional[str] = None,
+        ttl: Optional[int] = None,
+    ) -> bool:
+        cache_key = self.make_canonical_key(endpoint, params, season)
+        if ttl is None:
+            # Detect season
+            s = season
+            if not s and params:
+                for key in ("Season", "season", "season_id", "SeasonId"):
+                    if key in params:
+                        s = str(params[key])
+                        break
+            ttl = self.get_season_ttl(s)
+
+        from datetime import timezone
+        payload = {
+            "endpoint": endpoint,
+            "params": params,
+            "data": data,
+            "cached_at": datetime.now(timezone.utc).isoformat(),
+        }
+        try:
+            self._sync_client.set(cache_key, json.dumps(payload), ex=ttl)
+            self.stats["sets"] += 1
+            return True
+        except Exception as e:
+            logger.error(f"Error writing API data to sync cache: {e}")
+            return False
+
+    async def aget_api_data(
+        self,
+        endpoint: str,
+        params: Optional[Dict[str, Any]] = None,
+        season: Optional[str] = None,
+    ) -> Optional[Any]:
+        cache_key = self.make_canonical_key(endpoint, params, season)
+        client = await self._get_async_client()
+        try:
+            val = await client.get(cache_key)
+            if val is not None:
+                self.stats["hits"] += 1
+                try:
+                    payload = json.loads(val)
+                    return payload.get("data")
+                except json.JSONDecodeError:
+                    return val
+            self.stats["misses"] += 1
+            return None
+        except Exception as e:
+            logger.error(f"Error reading API data from async cache: {e}")
+            self.stats["misses"] += 1
+            return None
+
+    async def aset_api_data(
+        self,
+        endpoint: str,
+        params: Optional[Dict[str, Any]],
+        data: Any,
+        season: Optional[str] = None,
+        ttl: Optional[int] = None,
+    ) -> bool:
+        cache_key = self.make_canonical_key(endpoint, params, season)
+        if ttl is None:
+            s = season
+            if not s and params:
+                for key in ("Season", "season", "season_id", "SeasonId"):
+                    if key in params:
+                        s = str(params[key])
+                        break
+            ttl = self.get_season_ttl(s)
+
+        from datetime import timezone
+        payload = {
+            "endpoint": endpoint,
+            "params": params,
+            "data": data,
+            "cached_at": datetime.now(timezone.utc).isoformat(),
+        }
+        client = await self._get_async_client()
+        try:
+            await client.set(cache_key, json.dumps(payload), ex=ttl)
+            self.stats["sets"] += 1
+            return True
+        except Exception as e:
+            logger.error(f"Error writing API data to async cache: {e}")
+            return False
+
+    # Tier 2: Natural Language Query Caching (Sync)
     def get(self, query: str) -> Optional[str]:
         cache_key = self._generate_key(query)
         try:
@@ -170,7 +335,6 @@ class RedisQueryCache:
         except Exception as e:
             logger.error(f"Error writing to async cache: {e}")
             return False
-
 
     def get_stats(self) -> Dict[str, Any]:
         hit_ratio = 0.0
