@@ -1,0 +1,813 @@
+[
+  {
+    "id": 1,
+    "category": "single_filtered",
+    "canonical_query": "Anthony Edwards playoff points in 2023-24",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2023-24",
+    "entities": [
+      "Anthony Edwards"
+    ],
+    "paraphrases": [
+      "What were Anthony Edwards's PTS during the 2023-24 season (Playoffs)?",
+      "Show me Anthony Edwards Playoffs PTS stats back in 2023-24",
+      "Anthony Edwards 2023-24 Playoffs PTS",
+      "How did Anthony Edwards perform in 2023-24 when looking at Playoffs for PTS?"
+    ]
+  },
+  {
+    "id": 2,
+    "category": "single_filtered",
+    "canonical_query": "Nikola Jokic assists against the Boston Celtics in 2023-24",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2023-24",
+    "entities": [
+      "Nikola Jokic"
+    ],
+    "paraphrases": [
+      "What were Nikola Jokic's AST during the 2023-24 season (vs Celtics)?",
+      "Show me Nikola Jokic vs Celtics AST stats back in 2023-24",
+      "Nikola Jokic 2023-24 vs Celtics AST",
+      "How did Nikola Jokic perform in 2023-24 when looking at vs Celtics for AST?"
+    ]
+  },
+  {
+    "id": 3,
+    "category": "single_filtered",
+    "canonical_query": "Stephen Curry 3P% in 2022-23 in games with 30+ minutes",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2022-23",
+    "entities": [
+      "Stephen Curry"
+    ],
+    "paraphrases": [
+      "What were Stephen Curry's 3P% during the 2022-23 season (30+ minutes)?",
+      "Show me Stephen Curry 30+ minutes 3P% stats back in 2022-23",
+      "Stephen Curry 2022-23 30+ minutes 3P%",
+      "How did Stephen Curry perform in 2022-23 when looking at 30+ minutes for 3P%?"
+    ]
+  },
+  {
+    "id": 4,
+    "category": "single_filtered",
+    "canonical_query": "Devin Booker scoring splits without Kevin Durant in 2023-24",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2023-24",
+    "entities": [
+      "Devin Booker"
+    ],
+    "paraphrases": [
+      "What were Devin Booker's PTS during the 2023-24 season (without KD)?",
+      "Show me Devin Booker without KD PTS stats back in 2023-24",
+      "Devin Booker 2023-24 without KD PTS",
+      "How did Devin Booker perform in 2023-24 when looking at without KD for PTS?"
+    ]
+  },
+  {
+    "id": 5,
+    "category": "single_filtered",
+    "canonical_query": "Jayson Tatum scoring in the 2024 NBA Finals",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2023-24",
+    "entities": [
+      "Jayson Tatum"
+    ],
+    "paraphrases": [
+      "What were Jayson Tatum's PTS during the 2023-24 season (Finals)?",
+      "Show me Jayson Tatum Finals PTS stats back in 2023-24",
+      "Jayson Tatum 2023-24 Finals PTS",
+      "How did Jayson Tatum perform in 2023-24 when looking at Finals for PTS?"
+    ]
+  },
+  {
+    "id": 6,
+    "category": "single_filtered",
+    "canonical_query": "Shai Gilgeous-Alexander clutch scoring in 2023-24",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2023-24",
+    "entities": [
+      "Shai Gilgeous-Alexander"
+    ],
+    "paraphrases": [
+      "What were Shai Gilgeous-Alexander's PTS during the 2023-24 season (Clutch)?",
+      "Show me Shai Gilgeous-Alexander Clutch PTS stats back in 2023-24",
+      "Shai Gilgeous-Alexander 2023-24 Clutch PTS",
+      "How did Shai Gilgeous-Alexander perform in 2023-24 when looking at Clutch for PTS?"
+    ]
+  },
+  {
+    "id": 7,
+    "category": "single_filtered",
+    "canonical_query": "Luka Doncic road game assists in 2023-24",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2023-24",
+    "entities": [
+      "Luka Doncic"
+    ],
+    "paraphrases": [
+      "What were Luka Doncic's AST during the 2023-24 season (Road)?",
+      "Show me Luka Doncic Road AST stats back in 2023-24",
+      "Luka Doncic 2023-24 Road AST",
+      "How did Luka Doncic perform in 2023-24 when looking at Road for AST?"
+    ]
+  },
+  {
+    "id": 8,
+    "category": "single_filtered",
+    "canonical_query": "Giannis Antetokounmpo home rebounds in 2023-24",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2023-24",
+    "entities": [
+      "Giannis Antetokounmpo"
+    ],
+    "paraphrases": [
+      "What were Giannis Antetokounmpo's REB during the 2023-24 season (Home)?",
+      "Show me Giannis Antetokounmpo Home REB stats back in 2023-24",
+      "Giannis Antetokounmpo 2023-24 Home REB",
+      "How did Giannis Antetokounmpo perform in 2023-24 when looking at Home for REB?"
+    ]
+  },
+  {
+    "id": 9,
+    "category": "single_filtered",
+    "canonical_query": "Joel Embiid regular season points per game in 2022-23",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2022-23",
+    "entities": [
+      "Joel Embiid"
+    ],
+    "paraphrases": [
+      "What were Joel Embiid's PTS during the 2022-23 season (Regular Season)?",
+      "Show me Joel Embiid Regular Season PTS stats back in 2022-23",
+      "Joel Embiid 2022-23 Regular Season PTS",
+      "How did Joel Embiid perform in 2022-23 when looking at Regular Season for PTS?"
+    ]
+  },
+  {
+    "id": 10,
+    "category": "single_filtered",
+    "canonical_query": "Kevin Durant playoff three-pointers in 2023-24",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2023-24",
+    "entities": [
+      "Kevin Durant"
+    ],
+    "paraphrases": [
+      "What were Kevin Durant's 3PM during the 2023-24 season (Playoffs)?",
+      "Show me Kevin Durant Playoffs 3PM stats back in 2023-24",
+      "Kevin Durant 2023-24 Playoffs 3PM",
+      "How did Kevin Durant perform in 2023-24 when looking at Playoffs for 3PM?"
+    ]
+  },
+  {
+    "id": 11,
+    "category": "multi_comparison",
+    "canonical_query": "Compare Giannis Antetokounmpo and Joel Embiid true shooting in 2023-24",
+    "expected_endpoint": "Multiple",
+    "expected_season": "2023-24",
+    "entities": [
+      "Giannis Antetokounmpo",
+      "Joel Embiid"
+    ],
+    "paraphrases": [
+      "Please provide a comparison of Giannis Antetokounmpo and Joel Embiid in terms of TS% for 2023-24.",
+      "Who had better TS% in 2023-24, Giannis Antetokounmpo or Joel Embiid?",
+      "Giannis Antetokounmpo vs Joel Embiid TS% 2023-24",
+      "Compare TS% numbers between Giannis Antetokounmpo and Joel Embiid throughout 2023-24."
+    ]
+  },
+  {
+    "id": 12,
+    "category": "multi_comparison",
+    "canonical_query": "Compare Stephen Curry and Damian Lillard 3P% in 2022-23",
+    "expected_endpoint": "Multiple",
+    "expected_season": "2022-23",
+    "entities": [
+      "Stephen Curry",
+      "Damian Lillard"
+    ],
+    "paraphrases": [
+      "Please provide a comparison of Stephen Curry and Damian Lillard in terms of 3P% for 2022-23.",
+      "Who had better 3P% in 2022-23, Stephen Curry or Damian Lillard?",
+      "Stephen Curry vs Damian Lillard 3P% 2022-23",
+      "Compare 3P% numbers between Stephen Curry and Damian Lillard throughout 2022-23."
+    ]
+  },
+  {
+    "id": 13,
+    "category": "multi_comparison",
+    "canonical_query": "Victor Wembanyama vs Chet Holmgren blocks in 2023-24",
+    "expected_endpoint": "Multiple",
+    "expected_season": "2023-24",
+    "entities": [
+      "Victor Wembanyama",
+      "Chet Holmgren"
+    ],
+    "paraphrases": [
+      "Please provide a comparison of Victor Wembanyama and Chet Holmgren in terms of BLK for 2023-24.",
+      "Who had better BLK in 2023-24, Victor Wembanyama or Chet Holmgren?",
+      "Victor Wembanyama vs Chet Holmgren BLK 2023-24",
+      "Compare BLK numbers between Victor Wembanyama and Chet Holmgren throughout 2023-24."
+    ]
+  },
+  {
+    "id": 14,
+    "category": "multi_comparison",
+    "canonical_query": "Devin Booker vs Donovan Mitchell scoring in 2023-24",
+    "expected_endpoint": "Multiple",
+    "expected_season": "2023-24",
+    "entities": [
+      "Devin Booker",
+      "Donovan Mitchell"
+    ],
+    "paraphrases": [
+      "Please provide a comparison of Devin Booker and Donovan Mitchell in terms of PTS for 2023-24.",
+      "Who had better PTS in 2023-24, Devin Booker or Donovan Mitchell?",
+      "Devin Booker vs Donovan Mitchell PTS 2023-24",
+      "Compare PTS numbers between Devin Booker and Donovan Mitchell throughout 2023-24."
+    ]
+  },
+  {
+    "id": 15,
+    "category": "multi_comparison",
+    "canonical_query": "Rank Jokic, Embiid, and Giannis by efficiency in 2022-23",
+    "expected_endpoint": "Multiple",
+    "expected_season": "2022-23",
+    "entities": [
+      "Nikola Jokic",
+      "Joel Embiid",
+      "Giannis Antetokounmpo"
+    ],
+    "paraphrases": [
+      "Please provide a comparison of Nikola Jokic and Joel Embiid in terms of PER for 2022-23.",
+      "Who had better PER in 2022-23, Nikola Jokic or Joel Embiid?",
+      "Nikola Jokic vs Joel Embiid PER 2022-23",
+      "Compare PER numbers between Nikola Jokic and Joel Embiid throughout 2022-23."
+    ]
+  },
+  {
+    "id": 16,
+    "category": "multi_comparison",
+    "canonical_query": "Jayson Tatum vs Luka Doncic head-to-head points in 2023-24",
+    "expected_endpoint": "Multiple",
+    "expected_season": "2023-24",
+    "entities": [
+      "Jayson Tatum",
+      "Luka Doncic"
+    ],
+    "paraphrases": [
+      "Please provide a comparison of Jayson Tatum and Luka Doncic in terms of PTS for 2023-24.",
+      "Who had better PTS in 2023-24, Jayson Tatum or Luka Doncic?",
+      "Jayson Tatum vs Luka Doncic PTS 2023-24",
+      "Compare PTS numbers between Jayson Tatum and Luka Doncic throughout 2023-24."
+    ]
+  },
+  {
+    "id": 17,
+    "category": "multi_comparison",
+    "canonical_query": "LeBron James vs Stephen Curry assists in 2022-23",
+    "expected_endpoint": "Multiple",
+    "expected_season": "2022-23",
+    "entities": [
+      "LeBron James",
+      "Stephen Curry"
+    ],
+    "paraphrases": [
+      "Please provide a comparison of LeBron James and Stephen Curry in terms of AST for 2022-23.",
+      "Who had better AST in 2022-23, LeBron James or Stephen Curry?",
+      "LeBron James vs Stephen Curry AST 2022-23",
+      "Compare AST numbers between LeBron James and Stephen Curry throughout 2022-23."
+    ]
+  },
+  {
+    "id": 18,
+    "category": "multi_comparison",
+    "canonical_query": "Anthony Edwards vs Shai Gilgeous-Alexander scoring in 2023-24",
+    "expected_endpoint": "Multiple",
+    "expected_season": "2023-24",
+    "entities": [
+      "Anthony Edwards",
+      "Shai Gilgeous-Alexander"
+    ],
+    "paraphrases": [
+      "Please provide a comparison of Anthony Edwards and Shai Gilgeous-Alexander in terms of PTS for 2023-24.",
+      "Who had better PTS in 2023-24, Anthony Edwards or Shai Gilgeous-Alexander?",
+      "Anthony Edwards vs Shai Gilgeous-Alexander PTS 2023-24",
+      "Compare PTS numbers between Anthony Edwards and Shai Gilgeous-Alexander throughout 2023-24."
+    ]
+  },
+  {
+    "id": 19,
+    "category": "multi_comparison",
+    "canonical_query": "Rudy Gobert with and without Anthony Edwards on the floor in 2023-24",
+    "expected_endpoint": "TeamPlayerOnOffDetails",
+    "expected_season": "2023-24",
+    "entities": [
+      "Rudy Gobert",
+      "Anthony Edwards"
+    ],
+    "paraphrases": [
+      "Please provide a comparison of Rudy Gobert and Anthony Edwards in terms of on_off for 2023-24.",
+      "Who had better on_off in 2023-24, Rudy Gobert or Anthony Edwards?",
+      "Rudy Gobert vs Anthony Edwards on_off 2023-24",
+      "Compare on_off numbers between Rudy Gobert and Anthony Edwards throughout 2023-24."
+    ]
+  },
+  {
+    "id": 20,
+    "category": "multi_comparison",
+    "canonical_query": "LeBron James vs Michael Jordan career playoff Finals scoring",
+    "expected_endpoint": "Multiple",
+    "expected_season": "Career",
+    "entities": [
+      "LeBron James",
+      "Michael Jordan"
+    ],
+    "paraphrases": [
+      "Please provide a comparison of LeBron James and Michael Jordan in terms of Finals PPG for Career.",
+      "Who had better Finals PPG in Career, LeBron James or Michael Jordan?",
+      "LeBron James vs Michael Jordan Finals PPG Career",
+      "Compare Finals PPG numbers between LeBron James and Michael Jordan throughout Career."
+    ]
+  },
+  {
+    "id": 21,
+    "category": "relative_temporal",
+    "canonical_query": "Anthony Edwards scoring in his rookie year",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2020-21",
+    "entities": [
+      "Anthony Edwards"
+    ],
+    "paraphrases": [
+      "What were Anthony Edwards's statistical averages during his rookie year?",
+      "How many did Anthony Edwards put up as a rookie?",
+      "Anthony Edwards rookie year stats",
+      "Give me Anthony Edwards's overall performance in his first NBA year."
+    ]
+  },
+  {
+    "id": 22,
+    "category": "relative_temporal",
+    "canonical_query": "Victor Wembanyama stats in his rookie season",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2023-24",
+    "entities": [
+      "Victor Wembanyama"
+    ],
+    "paraphrases": [
+      "What were Victor Wembanyama's statistical averages during his rookie season?",
+      "How many did Victor Wembanyama put up as a rookie?",
+      "Victor Wembanyama rookie season stats",
+      "Give me Victor Wembanyama's overall performance in his first NBA year."
+    ]
+  },
+  {
+    "id": 23,
+    "category": "relative_temporal",
+    "canonical_query": "Stephen Curry assists during his rookie year",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2009-10",
+    "entities": [
+      "Stephen Curry"
+    ],
+    "paraphrases": [
+      "What were Stephen Curry's statistical averages during his rookie year?",
+      "How many did Stephen Curry put up as a rookie?",
+      "Stephen Curry rookie year stats",
+      "Give me Stephen Curry's overall performance in his first NBA year."
+    ]
+  },
+  {
+    "id": 24,
+    "category": "relative_temporal",
+    "canonical_query": "Nikola Jokic rebounds in his rookie season",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2015-16",
+    "entities": [
+      "Nikola Jokic"
+    ],
+    "paraphrases": [
+      "What were Nikola Jokic's statistical averages during his rookie season?",
+      "How many did Nikola Jokic put up as a rookie?",
+      "Nikola Jokic rookie season stats",
+      "Give me Nikola Jokic's overall performance in his first NBA year."
+    ]
+  },
+  {
+    "id": 25,
+    "category": "relative_temporal",
+    "canonical_query": "LeBron James points per game in his rookie year",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2003-04",
+    "entities": [
+      "LeBron James"
+    ],
+    "paraphrases": [
+      "What were LeBron James's statistical averages during his rookie year?",
+      "How many did LeBron James put up as a rookie?",
+      "LeBron James rookie year stats",
+      "Give me LeBron James's overall performance in his first NBA year."
+    ]
+  },
+  {
+    "id": 26,
+    "category": "relative_temporal",
+    "canonical_query": "Kevin Durant scoring average in his rookie year",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2007-08",
+    "entities": [
+      "Kevin Durant"
+    ],
+    "paraphrases": [
+      "What were Kevin Durant's statistical averages during his rookie year?",
+      "How many did Kevin Durant put up as a rookie?",
+      "Kevin Durant rookie year stats",
+      "Give me Kevin Durant's overall performance in his first NBA year."
+    ]
+  },
+  {
+    "id": 27,
+    "category": "relative_temporal",
+    "canonical_query": "Jayson Tatum playoff stats in his rookie year",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2017-18",
+    "entities": [
+      "Jayson Tatum"
+    ],
+    "paraphrases": [
+      "What were Jayson Tatum's statistical averages during his rookie year?",
+      "How many did Jayson Tatum put up as a rookie?",
+      "Jayson Tatum rookie year stats",
+      "Give me Jayson Tatum's overall performance in his first NBA year."
+    ]
+  },
+  {
+    "id": 28,
+    "category": "relative_temporal",
+    "canonical_query": "Luka Doncic triple-doubles in his rookie season",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2018-19",
+    "entities": [
+      "Luka Doncic"
+    ],
+    "paraphrases": [
+      "What were Luka Doncic's statistical averages during his rookie season?",
+      "How many did Luka Doncic put up as a rookie?",
+      "Luka Doncic rookie season stats",
+      "Give me Luka Doncic's overall performance in his first NBA year."
+    ]
+  },
+  {
+    "id": 29,
+    "category": "relative_temporal",
+    "canonical_query": "Giannis Antetokounmpo blocks in his rookie year",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2013-14",
+    "entities": [
+      "Giannis Antetokounmpo"
+    ],
+    "paraphrases": [
+      "What were Giannis Antetokounmpo's statistical averages during his rookie year?",
+      "How many did Giannis Antetokounmpo put up as a rookie?",
+      "Giannis Antetokounmpo rookie year stats",
+      "Give me Giannis Antetokounmpo's overall performance in his first NBA year."
+    ]
+  },
+  {
+    "id": 30,
+    "category": "relative_temporal",
+    "canonical_query": "Joel Embiid minutes per game in his rookie year",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2016-17",
+    "entities": [
+      "Joel Embiid"
+    ],
+    "paraphrases": [
+      "What were Joel Embiid's statistical averages during his rookie year?",
+      "How many did Joel Embiid put up as a rookie?",
+      "Joel Embiid rookie year stats",
+      "Give me Joel Embiid's overall performance in his first NBA year."
+    ]
+  },
+  {
+    "id": 31,
+    "category": "historical_era",
+    "canonical_query": "Michael Jordan points per game in 1997-98",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "1997-98",
+    "entities": [
+      "Michael Jordan"
+    ],
+    "paraphrases": [
+      "What was Michael Jordan's official statline during the 1997-98 NBA campaign?",
+      "How dominant was Michael Jordan back in 1997-98?",
+      "Michael Jordan box score 1997-98",
+      "Show me what Michael Jordan averaged throughout 1997-98."
+    ]
+  },
+  {
+    "id": 32,
+    "category": "historical_era",
+    "canonical_query": "Michael Jordan box score averages in 1987-88",
+    "expected_endpoint": "historical_sql",
+    "expected_season": "1987-88",
+    "entities": [
+      "Michael Jordan"
+    ],
+    "paraphrases": [
+      "What was Michael Jordan's official statline during the 1987-88 NBA campaign?",
+      "How dominant was Michael Jordan back in 1987-88?",
+      "Michael Jordan box score 1987-88",
+      "Show me what Michael Jordan averaged throughout 1987-88."
+    ]
+  },
+  {
+    "id": 33,
+    "category": "historical_era",
+    "canonical_query": "Wilt Chamberlain 100-point game box score",
+    "expected_endpoint": "historical_sql",
+    "expected_season": "1961-62",
+    "entities": [
+      "Wilt Chamberlain"
+    ],
+    "paraphrases": [
+      "What was Wilt Chamberlain's official statline during the 1961-62 NBA campaign?",
+      "How dominant was Wilt Chamberlain back in 1961-62?",
+      "Wilt Chamberlain box score 1961-62",
+      "Show me what Wilt Chamberlain averaged throughout 1961-62."
+    ]
+  },
+  {
+    "id": 34,
+    "category": "historical_era",
+    "canonical_query": "Magic Johnson assists per game in 1986-87",
+    "expected_endpoint": "historical_sql",
+    "expected_season": "1986-87",
+    "entities": [
+      "Magic Johnson"
+    ],
+    "paraphrases": [
+      "What was Magic Johnson's official statline during the 1986-87 NBA campaign?",
+      "How dominant was Magic Johnson back in 1986-87?",
+      "Magic Johnson box score 1986-87",
+      "Show me what Magic Johnson averaged throughout 1986-87."
+    ]
+  },
+  {
+    "id": 35,
+    "category": "historical_era",
+    "canonical_query": "Larry Bird regular season splits in 1985-86",
+    "expected_endpoint": "historical_sql",
+    "expected_season": "1985-86",
+    "entities": [
+      "Larry Bird"
+    ],
+    "paraphrases": [
+      "What was Larry Bird's official statline during the 1985-86 NBA campaign?",
+      "How dominant was Larry Bird back in 1985-86?",
+      "Larry Bird box score 1985-86",
+      "Show me what Larry Bird averaged throughout 1985-86."
+    ]
+  },
+  {
+    "id": 36,
+    "category": "historical_era",
+    "canonical_query": "Kareem Abdul-Jabbar MVP season statistics in 1975-76",
+    "expected_endpoint": "historical_sql",
+    "expected_season": "1975-76",
+    "entities": [
+      "Kareem Abdul-Jabbar"
+    ],
+    "paraphrases": [
+      "What was Kareem Abdul-Jabbar's official statline during the 1975-76 NBA campaign?",
+      "How dominant was Kareem Abdul-Jabbar back in 1975-76?",
+      "Kareem Abdul-Jabbar box score 1975-76",
+      "Show me what Kareem Abdul-Jabbar averaged throughout 1975-76."
+    ]
+  },
+  {
+    "id": 37,
+    "category": "historical_era",
+    "canonical_query": "Kobe Bryant scoring average in 2005-06",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2005-06",
+    "entities": [
+      "Kobe Bryant"
+    ],
+    "paraphrases": [
+      "What was Kobe Bryant's official statline during the 2005-06 NBA campaign?",
+      "How dominant was Kobe Bryant back in 2005-06?",
+      "Kobe Bryant box score 2005-06",
+      "Show me what Kobe Bryant averaged throughout 2005-06."
+    ]
+  },
+  {
+    "id": 38,
+    "category": "historical_era",
+    "canonical_query": "Shaquille O'Neal Finals stats in 1999-00",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "1999-00",
+    "entities": [
+      "Shaquille O'Neal"
+    ],
+    "paraphrases": [
+      "What was Shaquille O'Neal's official statline during the 1999-00 NBA campaign?",
+      "How dominant was Shaquille O'Neal back in 1999-00?",
+      "Shaquille O'Neal box score 1999-00",
+      "Show me what Shaquille O'Neal averaged throughout 1999-00."
+    ]
+  },
+  {
+    "id": 39,
+    "category": "historical_era",
+    "canonical_query": "Hakeem Olajuwon playoff blocks in 1993-94",
+    "expected_endpoint": "historical_sql",
+    "expected_season": "1993-94",
+    "entities": [
+      "Hakeem Olajuwon"
+    ],
+    "paraphrases": [
+      "What was Hakeem Olajuwon's official statline during the 1993-94 NBA campaign?",
+      "How dominant was Hakeem Olajuwon back in 1993-94?",
+      "Hakeem Olajuwon box score 1993-94",
+      "Show me what Hakeem Olajuwon averaged throughout 1993-94."
+    ]
+  },
+  {
+    "id": 40,
+    "category": "historical_era",
+    "canonical_query": "Bill Russell rebound averages in 1964-65",
+    "expected_endpoint": "historical_sql",
+    "expected_season": "1964-65",
+    "entities": [
+      "Bill Russell"
+    ],
+    "paraphrases": [
+      "What was Bill Russell's official statline during the 1964-65 NBA campaign?",
+      "How dominant was Bill Russell back in 1964-65?",
+      "Bill Russell box score 1964-65",
+      "Show me what Bill Russell averaged throughout 1964-65."
+    ]
+  },
+  {
+    "id": 41,
+    "category": "ambiguous_moniker",
+    "canonical_query": "Ant points per game in 2023-24",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2023-24",
+    "entities": [
+      "Anthony Edwards"
+    ],
+    "paraphrases": [
+      "What did Ant average in the 2023-24 season?",
+      "How many buckets did Ant get in 2023-24?",
+      "Ant 2023-24 numbers",
+      "Check the 2023-24 statline for Ant."
+    ]
+  },
+  {
+    "id": 42,
+    "category": "ambiguous_moniker",
+    "canonical_query": "Joker assists in 2023-24",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2023-24",
+    "entities": [
+      "Nikola Jokic"
+    ],
+    "paraphrases": [
+      "What did Joker average in the 2023-24 season?",
+      "How many buckets did Joker get in 2023-24?",
+      "Joker 2023-24 numbers",
+      "Check the 2023-24 statline for Joker."
+    ]
+  },
+  {
+    "id": 43,
+    "category": "ambiguous_moniker",
+    "canonical_query": "Wemby blocks in 2023-24",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2023-24",
+    "entities": [
+      "Victor Wembanyama"
+    ],
+    "paraphrases": [
+      "What did Wemby average in the 2023-24 season?",
+      "How many buckets did Wemby get in 2023-24?",
+      "Wemby 2023-24 numbers",
+      "Check the 2023-24 statline for Wemby."
+    ]
+  },
+  {
+    "id": 44,
+    "category": "ambiguous_moniker",
+    "canonical_query": "The Beard assists per game in 2023-24",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2023-24",
+    "entities": [
+      "James Harden"
+    ],
+    "paraphrases": [
+      "What did The Beard average in the 2023-24 season?",
+      "How many buckets did The Beard get in 2023-24?",
+      "The Beard 2023-24 numbers",
+      "Check the 2023-24 statline for The Beard."
+    ]
+  },
+  {
+    "id": 45,
+    "category": "ambiguous_moniker",
+    "canonical_query": "Steph three-pointers made in 2023-24",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2023-24",
+    "entities": [
+      "Stephen Curry"
+    ],
+    "paraphrases": [
+      "What did Steph average in the 2023-24 season?",
+      "How many buckets did Steph get in 2023-24?",
+      "Steph 2023-24 numbers",
+      "Check the 2023-24 statline for Steph."
+    ]
+  },
+  {
+    "id": 46,
+    "category": "ambiguous_moniker",
+    "canonical_query": "Dame points per game in 2023-24",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2023-24",
+    "entities": [
+      "Damian Lillard"
+    ],
+    "paraphrases": [
+      "What did Dame average in the 2023-24 season?",
+      "How many buckets did Dame get in 2023-24?",
+      "Dame 2023-24 numbers",
+      "Check the 2023-24 statline for Dame."
+    ]
+  },
+  {
+    "id": 47,
+    "category": "ambiguous_moniker",
+    "canonical_query": "Book scoring average in 2023-24",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2023-24",
+    "entities": [
+      "Devin Booker"
+    ],
+    "paraphrases": [
+      "What did Book average in the 2023-24 season?",
+      "How many buckets did Book get in 2023-24?",
+      "Book 2023-24 numbers",
+      "Check the 2023-24 statline for Book."
+    ]
+  },
+  {
+    "id": 48,
+    "category": "ambiguous_moniker",
+    "canonical_query": "SGA scoring and steals in 2023-24",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2023-24",
+    "entities": [
+      "Shai Gilgeous-Alexander"
+    ],
+    "paraphrases": [
+      "What did SGA average in the 2023-24 season?",
+      "How many buckets did SGA get in 2023-24?",
+      "SGA 2023-24 numbers",
+      "Check the 2023-24 statline for SGA."
+    ]
+  },
+  {
+    "id": 49,
+    "category": "ambiguous_moniker",
+    "canonical_query": "Chet blocks per game in 2023-24",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2023-24",
+    "entities": [
+      "Chet Holmgren"
+    ],
+    "paraphrases": [
+      "What did Chet average in the 2023-24 season?",
+      "How many buckets did Chet get in 2023-24?",
+      "Chet 2023-24 numbers",
+      "Check the 2023-24 statline for Chet."
+    ]
+  },
+  {
+    "id": 50,
+    "category": "ambiguous_moniker",
+    "canonical_query": "Greek Freak points in the paint in 2023-24",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2023-24",
+    "entities": [
+      "Giannis Antetokounmpo"
+    ],
+    "paraphrases": [
+      "What did Greek Freak average in the 2023-24 season?",
+      "How many buckets did Greek Freak get in 2023-24?",
+      "Greek Freak 2023-24 numbers",
+      "Check the 2023-24 statline for Greek Freak."
+    ]
+  }
+]

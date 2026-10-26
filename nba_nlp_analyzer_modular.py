@@ -51,10 +51,20 @@ class NBAQueryAnalyzer:
         from nlp.synthesizer import Synthesizer
         from nlp.caesura_planner import CaesuraPlanner
         from core.nba_client import NBAClient
+        from router.semantic_index import SemanticEndpointIndex
+        from router.intent_parser import IntentParser
+        from entities.resolver import EntityResolver
+
         self.hybrid_router = HybridRouter(self.endpoint_library)
         self.synthesizer = Synthesizer()
         self.caesura_planner = CaesuraPlanner(catalogue=self.endpoint_library)
         self.nba_client = NBAClient(cache=self.cache)
+        self.entity_resolver = EntityResolver()
+        self.semantic_index = SemanticEndpointIndex()
+        self.semantic_intent_parser = IntentParser(
+            catalogue=None,
+            entity_resolver=self.entity_resolver
+        )
     
     def is_research_query(self, query: str) -> bool:
         """Determines if a query requires multi-endpoint CAESURA research vs single-stat lookup."""
@@ -208,51 +218,87 @@ class NBAQueryAnalyzer:
             return
             
         try:
-            # 3. Local Route Resolution in Python code (0 LLM calls!)
-            with TelemetryManager.start_span("deepbag.local_routing", {"query": query}) as route_span:
-                plan = self.hybrid_router.route(query)
-                yield {"type": "thought", "content": f"Resolved route deterministically in code -> {plan.tool} ({plan.endpoint}). Reason: {plan.reason}"}
-
-            final_text = ""
-            
-            # 3. Direct Code Dispatch
-            if plan.tool == "premise_correction" or plan.direct_response:
-                yield {"type": "thought", "content": f"Premise check triggered: {plan.reason}"}
-                yield {"type": "final_answer", "content": plan.direct_response}
+            # 3. Check for direct documentation or premise correction
+            legacy_route = self.hybrid_router.route(query)
+            if legacy_route.tool == "premise_correction" or legacy_route.direct_response:
+                yield {"type": "thought", "content": f"Premise check triggered: {legacy_route.reason}"}
+                yield {"type": "final_answer", "content": legacy_route.direct_response}
                 return
 
-            if plan.plans:
-                # Multi-plan execution (e.g. multi-player comparison, regular vs playoff)
-                combined_data = {}
-                for sub_plan in plan.plans:
-                    target_tool = sub_plan.get("tool", "call_nba_api")
-                    target_ep = sub_plan.get("endpoint", "PlayerGameLog")
-                    target_params = sub_plan.get("params", {})
-                    label = sub_plan.get("player_name") or sub_plan.get("team_name") or sub_plan.get("season_type") or target_ep
-                    
-                    if target_tool == "query_historical_database":
-                        from nlp.sql_tool import HistoricalSQLTool
-                        sql_tool = HistoricalSQLTool()
-                        sub_data = sql_tool.execute_sql(sub_plan.get("sql_query", ""))
-                    else:
-                        sub_data = execute_api_call(target_ep, target_params)
-                    combined_data[label] = sub_data
-                
-                for event in self.synthesizer.synthesize(query, combined_data, endpoint_name="Multi-Endpoint Comparison", model_name=model_name):
+            if legacy_route.tool == "search_api_docs":
+                yield {"type": "tool_call", "tool": "search_api_docs", "params": legacy_route.params}
+                from nlp.meta_tools import MetaToolExecutor
+                executor = MetaToolExecutor(self.endpoint_library)
+                data = executor.search_api_docs(legacy_route.params.get("keywords", ""))
+                yield {"type": "tool_result", "tool": "search_api_docs", "result": data}
+                for event in self.synthesizer.synthesize(query, data, endpoint_name="Documentation", model_name=model_name):
                     yield event
                     if event.get("type") == "final_answer":
                         final_text = event.get("content", "")
-                
+                return
+
+            # 4. Two-Stage Semantic + Constrained Intent Router
+            with TelemetryManager.start_span("deepbag.semantic_routing", {"query": query}):
+                candidates = self.semantic_index.retrieve_candidates(
+                    query=query,
+                    top_k=5,
+                    shadow_keyword_matcher=self.hybrid_router.route
+                )
+                cand_names = [c[0] for c in candidates]
+                yield {"type": "thought", "content": f"FastEmbed retrieved Top-5 candidate endpoints: {', '.join(cand_names)}"}
+                semantic_plan = self.semantic_intent_parser.parse_intent(query=query, candidate_endpoints=cand_names)
+
+            if semantic_plan and semantic_plan.scope_receipt:
+                yield {"type": "thought", "content": semantic_plan.scope_receipt.format_markdown()}
+
+            final_text = ""
+
+            if semantic_plan and semantic_plan.endpoint_calls:
+                yield {"type": "thought", "content": f"Compiling QueryPlan with {len(semantic_plan.endpoint_calls)} call(s). Rationale: {semantic_plan.reasoning}"}
+
+                if len(semantic_plan.endpoint_calls) > 1:
+                    combined_data = {}
+                    for call in semantic_plan.endpoint_calls:
+                        ep = call.endpoint
+                        params = call.params
+                        lbl = call.entity_label or ep
+                        yield {"type": "tool_call", "tool": "call_nba_api", "params": {"endpoint_name": ep, "parameters": params}}
+                        sub_data = execute_api_call(ep, params)
+                        combined_data[lbl] = sub_data
+                        yield {"type": "tool_result", "tool": "call_nba_api", "result": self.agent.summarize_result(sub_data) if isinstance(sub_data, dict) else sub_data}
+
+                    for event in self.synthesizer.synthesize(query, combined_data, endpoint_name="Multi-Endpoint Comparison", model_name=model_name):
+                        yield event
+                        if event.get("type") == "final_answer":
+                            final_text = event.get("content", "")
+                    if final_text and not final_text.startswith("Error"):
+                        self.cache.set(query, final_text)
+                    return
+
+                single_call = semantic_plan.endpoint_calls[0]
+                target_ep = single_call.endpoint
+                target_params = single_call.params
+                season_val = semantic_plan.season
+
+                cached_data = self.cache.get_api_data(target_ep, target_params, season=season_val)
+                if cached_data is not None:
+                    yield {"type": "thought", "content": f"Found canonical cache hit for {target_ep}. Skipping upstream NBA API call."}
+                    data = cached_data
+                else:
+                    yield {"type": "tool_call", "tool": "call_nba_api", "params": {"endpoint_name": target_ep, "parameters": target_params}}
+                    data = execute_api_call(target_ep, target_params)
+                    if not (isinstance(data, dict) and "error" in data):
+                        self.cache.set_api_data(target_ep, target_params, data, season=season_val)
+                    yield {"type": "tool_result", "tool": "call_nba_api", "result": self.agent.summarize_result(data) if isinstance(data, dict) else data}
+
+                for event in self.synthesizer.synthesize(query, data, endpoint_name=target_ep, model_name=model_name):
+                    yield event
+                    if event.get("type") == "final_answer":
+                        final_text = event.get("content", "")
+
                 if final_text and not final_text.startswith("Error"):
                     self.cache.set(query, final_text)
                 return
-
-            if plan.tool == "search_api_docs":
-                yield {"type": "tool_call", "tool": "search_api_docs", "params": plan.params}
-                from nlp.meta_tools import MetaToolExecutor
-                executor = MetaToolExecutor(self.endpoint_library)
-                data = executor.search_api_docs(plan.params.get("keywords", ""))
-                yield {"type": "tool_result", "tool": "search_api_docs", "result": data}
                 
                 # 4. 1-Turn Synthesis
                 for event in self.synthesizer.synthesize(query, data, endpoint_name="Documentation", model_name=model_name):

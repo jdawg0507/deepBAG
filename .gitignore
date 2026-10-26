@@ -8,6 +8,7 @@ htmlcov/
 .venv/
 *.db
 !query_cache.db
+!data/disambiguation_cache.db
 .DS_Store
 node_modules/
 dist/

@@ -13,7 +13,7 @@ from collections import defaultdict
 from deepeval.test_case import LLMTestCase
 from deepeval.metrics import BaseMetric
 
-FIXTURE_PATH = os.path.join(os.path.dirname(__file__), "..", "fixtures", "eval_50_queries.json")
+FIXTURE_PATH = os.path.join(os.path.dirname(__file__), "..", "fixtures", "eval_50_legacy.json")
 
 def load_benchmark_queries() -> List[Dict[str, Any]]:
     with open(FIXTURE_PATH, "r", encoding="utf-8") as f:

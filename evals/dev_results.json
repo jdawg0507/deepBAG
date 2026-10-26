@@ -1,0 +1,195 @@
+{
+  "dataset": "evals/dev_seed.json",
+  "blueprints_evaluated": 3,
+  "total_queries": 12,
+  "overall_accuracy_pct": 100.0,
+  "overall_consistency_pct": 100.0,
+  "category_breakdown": {
+    "single_filtered": {
+      "blueprints": 3,
+      "consistent_clusters": 3,
+      "paraphrases": 12,
+      "accurate_paraphrases": 12
+    }
+  },
+  "item_results": [
+    {
+      "id": 1,
+      "category": "single_filtered",
+      "canonical_query": "Anthony Edwards playoff points in 2023-24",
+      "paraphrase_results": [
+        {
+          "query": "What were Anthony Edwards's PTS during the 2023-24 season (Playoffs)?",
+          "endpoint": "PlayerGameLog",
+          "season": "2023-24",
+          "entities": [
+            "anthony edwards"
+          ],
+          "endpoint_match": true,
+          "entities_match": true,
+          "season_match": true,
+          "is_accurate": true
+        },
+        {
+          "query": "Show me Anthony Edwards Playoffs PTS stats back in 2023-24",
+          "endpoint": "PlayerGameLog",
+          "season": "2023-24",
+          "entities": [
+            "anthony edwards"
+          ],
+          "endpoint_match": true,
+          "entities_match": true,
+          "season_match": true,
+          "is_accurate": true
+        },
+        {
+          "query": "Anthony Edwards 2023-24 Playoffs PTS",
+          "endpoint": "PlayerGameLog",
+          "season": "2023-24",
+          "entities": [
+            "anthony edwards"
+          ],
+          "endpoint_match": true,
+          "entities_match": true,
+          "season_match": true,
+          "is_accurate": true
+        },
+        {
+          "query": "How did Anthony Edwards perform in 2023-24 when looking at Playoffs for PTS?",
+          "endpoint": "PlayerGameLog",
+          "season": "2023-24",
+          "entities": [
+            "anthony edwards"
+          ],
+          "endpoint_match": true,
+          "entities_match": true,
+          "season_match": true,
+          "is_accurate": true
+        }
+      ],
+      "is_consistent": true,
+      "all_accurate": true,
+      "accuracy_count": 4,
+      "total_count": 4
+    },
+    {
+      "id": 2,
+      "category": "single_filtered",
+      "canonical_query": "Nikola Jokic assists against the Boston Celtics in 2023-24",
+      "paraphrase_results": [
+        {
+          "query": "What were Nikola Jokic's AST during the 2023-24 season (vs Celtics)?",
+          "endpoint": "PlayerGameLog",
+          "season": "2023-24",
+          "entities": [
+            "nikola jokic"
+          ],
+          "endpoint_match": true,
+          "entities_match": true,
+          "season_match": true,
+          "is_accurate": true
+        },
+        {
+          "query": "Show me Nikola Jokic vs Celtics AST stats back in 2023-24",
+          "endpoint": "PlayerGameLog",
+          "season": "2023-24",
+          "entities": [
+            "nikola jokic"
+          ],
+          "endpoint_match": true,
+          "entities_match": true,
+          "season_match": true,
+          "is_accurate": true
+        },
+        {
+          "query": "Nikola Jokic 2023-24 vs Celtics AST",
+          "endpoint": "PlayerGameLog",
+          "season": "2023-24",
+          "entities": [
+            "nikola jokic"
+          ],
+          "endpoint_match": true,
+          "entities_match": true,
+          "season_match": true,
+          "is_accurate": true
+        },
+        {
+          "query": "How did Nikola Jokic perform in 2023-24 when looking at vs Celtics for AST?",
+          "endpoint": "PlayerGameLog",
+          "season": "2023-24",
+          "entities": [
+            "nikola jokic",
+            "boston celtics"
+          ],
+          "endpoint_match": true,
+          "entities_match": true,
+          "season_match": true,
+          "is_accurate": true
+        }
+      ],
+      "is_consistent": true,
+      "all_accurate": true,
+      "accuracy_count": 4,
+      "total_count": 4
+    },
+    {
+      "id": 3,
+      "category": "single_filtered",
+      "canonical_query": "Stephen Curry 3P% in 2022-23 in games with 30+ minutes",
+      "paraphrase_results": [
+        {
+          "query": "What were Stephen Curry's 3P% during the 2022-23 season (30+ minutes)?",
+          "endpoint": "PlayerGameLog",
+          "season": "2022-23",
+          "entities": [
+            "stephen curry"
+          ],
+          "endpoint_match": true,
+          "entities_match": true,
+          "season_match": true,
+          "is_accurate": true
+        },
+        {
+          "query": "Show me Stephen Curry 30+ minutes 3P% stats back in 2022-23",
+          "endpoint": "PlayerGameLog",
+          "season": "2022-23",
+          "entities": [
+            "stephen curry"
+          ],
+          "endpoint_match": true,
+          "entities_match": true,
+          "season_match": true,
+          "is_accurate": true
+        },
+        {
+          "query": "Stephen Curry 2022-23 30+ minutes 3P%",
+          "endpoint": "PlayerGameLog",
+          "season": "2022-23",
+          "entities": [
+            "stephen curry"
+          ],
+          "endpoint_match": true,
+          "entities_match": true,
+          "season_match": true,
+          "is_accurate": true
+        },
+        {
+          "query": "How did Stephen Curry perform in 2022-23 when looking at 30+ minutes for 3P%?",
+          "endpoint": "PlayerGameLog",
+          "season": "2022-23",
+          "entities": [
+            "stephen curry"
+          ],
+          "endpoint_match": true,
+          "entities_match": true,
+          "season_match": true,
+          "is_accurate": true
+        }
+      ],
+      "is_consistent": true,
+      "all_accurate": true,
+      "accuracy_count": 4,
+      "total_count": 4
+    }
+  ]
+}
