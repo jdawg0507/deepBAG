@@ -91,8 +91,11 @@ class NBAQueryAnalyzer:
             
     def _setup_model(self, api_key):
         """Initialize the Gemini model with the provided API key"""
+        import os
         genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-2.5-flash')
+        model_name = os.environ.get("GEMINI_MODEL", "gemini-1.5-flash")
+        self.model = genai.GenerativeModel(model_name)
+
     
     
 

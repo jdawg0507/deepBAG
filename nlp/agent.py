@@ -4,9 +4,11 @@ from api.endpoint_utils import execute_api_call
 from utils.data_utils import clean_json_response
 
 class NBAAgent:
-    def __init__(self, model_name='gemini-2.5-flash'):
-        self.model_name = model_name
-        self.fallback_models = ['gemini-3.1-flash-lite', 'gemini-3.5-flash', 'gemini-2.5-flash-lite']
+    def __init__(self, model_name=None):
+        import os
+        self.model_name = model_name or os.environ.get("GEMINI_MODEL", "gemini-1.5-flash")
+        self.fallback_models = ["gemini-1.5-flash-8b", "gemini-1.5-pro", "gemini-2.0-flash"]
+
 
     def summarize_result(self, result_dict, max_rows=3):
         """Summarize or truncate the DataFrame dict to prevent blowing up the context window"""
