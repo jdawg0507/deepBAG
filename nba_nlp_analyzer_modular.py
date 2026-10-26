@@ -47,9 +47,9 @@ class NBAQueryAnalyzer:
         self.agent = NBAAgent()
         self.cache = RedisQueryCache()
     
-    def process_query_agentic(self, query):
+    def process_query_agentic(self, query, model_name=None):
         """Process an NBA stats query using the new Gemini Function Calling Agent"""
-        print(f"\nProcessing query (Agentic): {query}")
+        print(f"\nProcessing query (Agentic, model={model_name or 'default'}): {query}")
         
         from nlp.meta_tools import get_meta_tools_declarations
         from nlp.sql_tool import get_sql_tool_declaration
@@ -66,15 +66,16 @@ class NBAQueryAnalyzer:
             TelemetryManager.record_cache_event(hit=False, query=query)
             
         try:
-            with TelemetryManager.start_span("deepbag.agentic_route_resolution", {"query": query}) as route_span:
+            with TelemetryManager.start_span("deepbag.agentic_route_resolution", {"query": query, "model": model_name or "default"}) as route_span:
                 # 2. Build the static list of tools (Meta-Tools + SQL Tool)
                 tools = get_meta_tools_declarations()
                 tools.append(get_sql_tool_declaration())
                     
                 # 3. Run the Agentic Loop (Streaming)
                 final_text = ""
-                for event in self.agent.run_stream(query, tools, self.endpoint_library):
+                for event in self.agent.run_stream(query, tools, self.endpoint_library, model_name=model_name):
                     yield event
+
                     if event.get("type") == "final_answer":
                         final_text = event.get("content", "")
                 
@@ -93,7 +94,7 @@ class NBAQueryAnalyzer:
         """Initialize the Gemini model with the provided API key"""
         import os
         genai.configure(api_key=api_key)
-        model_name = os.environ.get("GEMINI_MODEL", "gemini-1.5-flash")
+        model_name = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite")
         self.model = genai.GenerativeModel(model_name)
 
 

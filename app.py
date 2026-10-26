@@ -3,12 +3,16 @@ import sys
 import json
 import logging
 from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 
 # Load .env file automatically
 load_dotenv()
 
 # Add directory to sys.path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 
 
 from nba_nlp_analyzer_modular import NBAQueryAnalyzer
@@ -62,9 +66,10 @@ async def chat_endpoint(request: ChatRequest):
     async def event_generator():
         with TelemetryManager.start_span("deepbag.chat_stream", {"query": request.query, "session_id": request.session_id or ""}):
             try:
-                print(f"[INGRESS VALIDATED] Received query: {request.query}")
-                for event in analyzer.process_query_agentic(request.query):
+                print(f"[INGRESS VALIDATED] Received query (model={request.model}): {request.query}")
+                for event in analyzer.process_query_agentic(request.query, model_name=request.model):
                     yield f"data: {json.dumps(event)}\n\n"
+
             except Exception as e:
                 import traceback
                 traceback.print_exc()

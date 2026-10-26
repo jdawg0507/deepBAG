@@ -94,6 +94,54 @@ body {
   color: var(--text-muted);
 }
 
+/* Header Controls & Model Picker */
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.model-picker-container {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 0.38rem 0.75rem;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+}
+
+.model-picker-container:hover,
+.model-picker-container:focus-within {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 2px var(--primary-glow);
+}
+
+.model-picker-icon {
+  color: #38bdf8;
+  flex-shrink: 0;
+}
+
+.model-picker-select {
+  background: transparent;
+  color: #f1f5f9;
+  border: none;
+  outline: none;
+  font-size: 0.75rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.model-picker-select option {
+  background: #0f172a;
+  color: #f8fafc;
+  padding: 0.5rem;
+}
+
 /* Telemetry Banner */
 .telemetry-banner {
   display: flex;

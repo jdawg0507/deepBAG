@@ -6,11 +6,18 @@ from utils.data_utils import clean_json_response
 class NBAAgent:
     def __init__(self, model_name=None):
         import os
-        self.model_name = model_name or os.environ.get("GEMINI_MODEL", "gemini-1.5-flash")
-        self.fallback_models = ["gemini-2.0-flash", "gemini-1.5-pro", "gemini-1.5-flash-8b"]
-
-
-
+        self.model_name = model_name or os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite")
+        api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+        if api_key:
+            genai.configure(api_key=api_key, transport="rest")
+        self.fallback_models = [
+            "gemini-3.1-flash-lite-preview",
+            "gemini-3.5-flash-lite",
+            "gemini-3.5-flash",
+            "gemini-3.8-flash",
+            "gemini-flash-latest",
+            "gemini-pro-latest",
+        ]
 
     def summarize_result(self, result_dict, max_rows=3):
         """Summarize or truncate the DataFrame dict to prevent blowing up the context window"""
@@ -38,7 +45,7 @@ class NBAAgent:
                 }
         return summary
 
-    def run_stream(self, query, tools, endpoint_library):
+    def run_stream(self, query, tools, endpoint_library, model_name=None):
         """Runs the agentic loop as a generator, yielding events"""
         yield {"type": "thought", "content": f"Initializing agent with {len(tools)} meta-tools..."}
         
@@ -73,8 +80,8 @@ class NBAAgent:
         Omit chart blocks for simple single-fact lookups.
         """
 
-        
-        models_to_try = [self.model_name] + self.fallback_models
+        primary_model = model_name or self.model_name
+        models_to_try = [primary_model] + [m for m in self.fallback_models if m != primary_model]
         from nlp.meta_tools import MetaToolExecutor
         meta_executor = MetaToolExecutor(endpoint_library)
         
@@ -82,6 +89,7 @@ class NBAAgent:
         for model_idx, current_model in enumerate(models_to_try):
             try:
                 yield {"type": "thought", "content": f"Analyzing query using {current_model}..."}
+
                 
                 model = genai.GenerativeModel(
                     model_name=current_model,
@@ -177,7 +185,21 @@ class NBAAgent:
                                     )
                                 )
                                 
-                                response = chat.send_message(part)
+                                try:
+                                    response = chat.send_message(part)
+                                except Exception as send_err:
+                                    # Fallback if SDK or model requires thought_signature on function_response
+                                    if "thought_signature" in str(send_err).lower() or "400" in str(send_err):
+                                        if len(chat.history) > 2:
+                                            chat.history.pop()
+                                        fallback_prompt = (
+                                            f"Tool '{function_name}' returned the following result:\n"
+                                            f"{json.dumps(clean_summary)}\n\n"
+                                            "Based on this data, please provide your final data-backed answer and analysis for the user."
+                                        )
+                                        response = chat.send_message(fallback_prompt)
+                                    else:
+                                        raise send_err
                                 
                             except Exception as e:
                                 yield {"type": "thought", "content": f"Tool Execution Error: {e}"}
@@ -193,7 +215,16 @@ class NBAAgent:
                                     )
                                 )
                                 
-                                response = chat.send_message(error_part)
+                                try:
+                                    response = chat.send_message(error_part)
+                                except Exception as err_send_err:
+                                    if "thought_signature" in str(err_send_err).lower() or "400" in str(err_send_err):
+                                        if len(chat.history) > 2:
+                                            chat.history.pop()
+                                        fallback_prompt = f"Tool '{function_name}' returned an error: {e}. Please answer the user with the best available data."
+                                        response = chat.send_message(fallback_prompt)
+                                    else:
+                                        raise err_send_err
 
                     else:
                         # Model returned text, we are done
@@ -215,13 +246,28 @@ class NBAAgent:
                 
             except Exception as e:
                 import google.api_core.exceptions
-                if isinstance(e, google.api_core.exceptions.ResourceExhausted) or "429" in str(e) or "Quota" in str(e) or "exhausted" in str(e).lower():
-                    if model_idx < len(models_to_try) - 1:
-                        next_model = models_to_try[model_idx + 1]
-                        yield {"type": "thought", "content": f"Rate limit hit on {current_model}. Restarting loop with {next_model}..."}
-                        continue # Try next model in the top-level loop
+                err_str = str(e).lower()
+                is_recoverable = (
+                    isinstance(e, (
+                        google.api_core.exceptions.ResourceExhausted,
+                        google.api_core.exceptions.ServiceUnavailable,
+                        google.api_core.exceptions.NotFound
+                    ))
+                    or any(k in err_str for k in [
+                        "429", "503", "404", "quota", "exhausted",
+                        "high demand", "unavailable", "temporarily", "rate limit", "no longer available"
+                    ])
+                )
+                if is_recoverable and model_idx < len(models_to_try) - 1:
+                    next_model = models_to_try[model_idx + 1]
+                    short_err = str(e).splitlines()[0][:90]
+                    yield {
+                        "type": "thought",
+                        "content": f"⚠️ {current_model} unavailable ({short_err}...). Auto-switching to fallback model: {next_model}..."
+                    }
+                    continue # Try next model in the top-level loop
                 
-                # If we get here, it's either not a rate limit error, or we ran out of fallback models
+                # If we get here, it's either not a recoverable error, or we ran out of fallback models
                 import traceback
                 traceback.print_exc()
                 yield {"type": "final_answer", "content": f"Error processing query via agent: {str(e)}"}

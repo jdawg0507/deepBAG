@@ -34,6 +34,8 @@ class ChatRequest(BaseModel):
     )
     session_id: Optional[str] = Field(None, description="Optional client session identifier for telemetry correlation.")
     bypass_cache: bool = Field(False, description="Whether to bypass the distributed cache.")
+    model: Optional[str] = Field("gemini-3.1-flash-lite", description="Gemini model selection (e.g. gemini-3.1-flash-lite, gemini-3.8-flash, gemini-flash-latest).")
+
 
 class ChatResponse(BaseModel):
     """Egress schema for final agent responses."""

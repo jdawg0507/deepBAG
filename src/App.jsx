@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Send, Bot, User, Sparkles, Flame, RefreshCcw, HelpCircle } from 'lucide-react';
+import { Send, Bot, User, Sparkles, Flame, RefreshCcw, HelpCircle, Cpu } from 'lucide-react';
 import { ChartRenderer, parseChartMarkdownBlock } from './components/ChartRenderer';
 import { TelemetryBanner } from './components/TelemetryBanner';
 import { ReasoningAccordion } from './components/ReasoningAccordion';
@@ -22,6 +22,7 @@ function App() {
     }
   ]);
   const [input, setInput] = useState('');
+  const [selectedModel, setSelectedModel] = useState('gemini-3.1-flash-lite');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
 
@@ -45,7 +46,7 @@ function App() {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: userMessage }),
+        body: JSON.stringify({ query: userMessage, model: selectedModel }),
       });
 
       if (!response.ok) {
@@ -142,7 +143,26 @@ function App() {
             <p className="header-subtitle">Production API Gateway & Semantic NBA Router</p>
           </div>
         </div>
-        <TelemetryBanner />
+        <div className="header-controls">
+          <div className="model-picker-container" title="Select Gemini Model Routing">
+            <Cpu size={14} className="model-picker-icon" />
+            <select
+              value={selectedModel}
+              onChange={(e) => setSelectedModel(e.target.value)}
+              className="model-picker-select"
+              aria-label="Select Gemini Model"
+            >
+              <option value="gemini-3.1-flash-lite">⚡ gemini-3.1-flash-lite (High RPM / Default)</option>
+              <option value="gemini-3.1-flash-lite-preview">🚀 gemini-3.1-flash-lite-preview</option>
+              <option value="gemini-3.5-flash-lite">✨ gemini-3.5-flash-lite</option>
+              <option value="gemini-3.8-flash">🔥 gemini-3.8-flash</option>
+              <option value="gemini-3.5-flash">💡 gemini-3.5-flash</option>
+              <option value="gemini-flash-latest">📦 gemini-flash-latest</option>
+              <option value="gemini-pro-latest">🧠 gemini-pro-latest</option>
+            </select>
+          </div>
+          <TelemetryBanner />
+        </div>
       </header>
 
       {/* Main Chat Stream Container */}
