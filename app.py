@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import logging
+from typing import Optional
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -58,6 +59,23 @@ except Exception as e:
     print(f"Failed to initialize analyzer: {e}")
     analyzer = None
 
+
+@app.get("/api/chat")
+async def chat_get_endpoint(query: Optional[str] = None, model: Optional[str] = None):
+    """
+    GET endpoint for browser access, SSE testing, or EventSource clients.
+    If 'query' query param is provided, streams events identically to POST.
+    If no query is provided, returns endpoint documentation and ready status.
+    """
+    if not query:
+        return {
+            "status": "online",
+            "endpoint": "/api/chat",
+            "supported_methods": ["POST", "GET"],
+            "message": "deepBAG SSE Streaming Endpoint. POST JSON {'query': '...'} or pass query parameter: /api/chat?query=Your+Question"
+        }
+    request = ChatRequest(query=query, model=model)
+    return await chat_endpoint(request)
 
 @app.post("/api/chat")
 async def chat_endpoint(request: ChatRequest):

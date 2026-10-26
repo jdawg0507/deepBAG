@@ -164,7 +164,11 @@ def execute_api_call(endpoint_name, params):
     with TelemetryManager.start_span("deepbag.nba_api_call", {"endpoint": endpoint_name, "params": json.dumps(valid_params)}) as span:
         start_time = time.time()
         try:
-            endpoint_instance = endpoint_class(**valid_params)
+            from core.nba_client import DEFAULT_HEADERS
+            try:
+                endpoint_instance = endpoint_class(headers=DEFAULT_HEADERS, timeout=15, **valid_params)
+            except TypeError:
+                endpoint_instance = endpoint_class(**valid_params)
             print(f"  Successfully created endpoint instance")
         except Exception as e:
             print(f"  ERROR creating endpoint instance: {str(e)}")

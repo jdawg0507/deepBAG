@@ -83,7 +83,7 @@ function App() {
                   };
 
                   if (data.type === 'final_answer') {
-                    currentMsg.content = data.content;
+                    currentMsg.content = typeof data.content === 'string' ? data.content : JSON.stringify(data.content, null, 2);
                   } else {
                     // Prevent duplicate trace cards caused by React StrictMode double invocation
                     const isDuplicate = currentMsg.reasoning.some(
@@ -108,7 +108,7 @@ function App() {
       console.error('Error in agentic chat streaming:', error);
       setMessages(prev => [...prev, {
         role: 'agent',
-        content: `### ⚠️ Gateway Connection Notice\nUnable to stream response from backend gateway (${error.message}). Ensure the backend is running at \`http://localhost:8001\`.`,
+        content: `### ⚠️ Gateway Connection Notice\nUnable to stream response from backend gateway (${error.message}). Ensure the backend is running at \`http://localhost:8000\`.`,
         reasoning: []
       }]);
     } finally {
@@ -123,11 +123,11 @@ function App() {
 
   // Custom Markdown Code Component for Chart.js Rendering
   const MarkdownComponents = {
-    code({ node, inline, className, children, ...props }) {
+    code({ node, className, children, ...props }) {
       const match = /language-(\w+|[\w:]+)/.exec(className || '');
       const lang = match ? match[1].toLowerCase() : '';
 
-      if (!inline && (lang === 'chart' || lang === 'json:chart')) {
+      if (lang === 'chart' || lang === 'json:chart') {
         const rawCode = String(children).replace(/\n$/, '');
         const chartConfig = parseChartMarkdownBlock(rawCode);
         if (chartConfig) {
@@ -202,10 +202,10 @@ function App() {
                   <div className="message-bubble">
                     {msg.role === 'agent' ? (
                       <ReactMarkdown components={MarkdownComponents}>
-                        {msg.content}
+                        {typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content, null, 2)}
                       </ReactMarkdown>
                     ) : (
-                      <p>{msg.content}</p>
+                      <p>{typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content, null, 2)}</p>
                     )}
                   </div>
                 )}

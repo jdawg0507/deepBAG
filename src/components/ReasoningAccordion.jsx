@@ -39,25 +39,33 @@ export function ReasoningAccordion({ steps = [] }) {
 
       {isOpen && (
         <div className="reasoning-accordion-body">
-          {steps.map((step, idx) => (
-            <div key={idx} className={`trace-step ${step.type}`}>
-              <div className="step-header">
-                {getStepIcon(step.type)}
-                <span className="step-content">{step.content}</span>
-              </div>
-              {step.details && (
-                <div className="step-details-card">
-                  <div className="details-card-header">
-                    <Code2 size={12} />
-                    <span>Validated Ingress Parameters</span>
-                  </div>
-                  <pre className="details-card-code">
-                    {typeof step.details === 'string' ? step.details : JSON.stringify(step.details, null, 2)}
-                  </pre>
+          {steps.map((step, idx) => {
+            const displayContent = typeof step.content === 'object' && step.content !== null
+              ? (step.type === 'intent' ? `Intent: ${step.content.question_type || 'Research Query'}` : JSON.stringify(step.content))
+              : (step.content || (step.tool ? `Tool Execution: ${step.tool}` : 'Processing step'));
+            
+            const detailsData = step.details || step.params || (typeof step.content === 'object' ? step.content : null);
+
+            return (
+              <div key={idx} className={`trace-step ${step.type}`}>
+                <div className="step-header">
+                  {getStepIcon(step.type)}
+                  <span className="step-content">{displayContent}</span>
                 </div>
-              )}
-            </div>
-          ))}
+                {detailsData && (
+                  <div className="step-details-card">
+                    <div className="details-card-header">
+                      <Code2 size={12} />
+                      <span>{step.type === 'intent' ? 'Extracted Intent Contract' : (step.details ? 'Validated Ingress Parameters' : 'Parameters')}</span>
+                    </div>
+                    <pre className="details-card-code">
+                      {typeof detailsData === 'string' ? detailsData : JSON.stringify(detailsData, null, 2)}
+                    </pre>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
