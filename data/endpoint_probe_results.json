@@ -1,0 +1,1640 @@
+{
+  "AllTimeLeadersGrids": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3688.8349056243896,
+    "params_used": {
+      "per_mode_simple": "PerGame"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "AssistLeaders": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "Expecting value: line 2 column 1 (char 1)",
+    "latency_ms": 176.23376846313477,
+    "params_used": {
+      "per_mode_simple": "PerGame",
+      "season": "2023-24",
+      "season_type_playoffs": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "AssistTracker": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "Expecting value: line 2 column 1 (char 1)",
+    "latency_ms": 79.4520378112793,
+    "params_used": {
+      "season_nullable": "2023-24"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "BoxScoreAdvancedV2": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3505.995035171509,
+    "params_used": {
+      "game_id": "0022300001"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "BoxScoreAdvancedV3": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3606.588840484619,
+    "params_used": {
+      "game_id": "0022300001"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "BoxScoreDefensiveV2": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3603.2960414886475,
+    "params_used": {
+      "game_id": "0022300001"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "BoxScoreFourFactorsV2": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3598.5970497131348,
+    "params_used": {
+      "game_id": "0022300001"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "BoxScoreFourFactorsV3": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3598.968982696533,
+    "params_used": {
+      "game_id": "0022300001"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "BoxScoreHustleV2": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3601.210117340088,
+    "params_used": {
+      "game_id": "0022300001"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "BoxScoreMatchupsV3": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3607.0432662963867,
+    "params_used": {
+      "game_id": "0022300001"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "BoxScoreMiscV2": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3599.599838256836,
+    "params_used": {
+      "game_id": "0022300001"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "BoxScoreMiscV3": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3578.4592628479004,
+    "params_used": {
+      "game_id": "0022300001"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "BoxScorePlayerTrackV2": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3581.7770957946777,
+    "params_used": {
+      "game_id": "0022300001"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "BoxScorePlayerTrackV3": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3865.522861480713,
+    "params_used": {
+      "game_id": "0022300001"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "BoxScoreScoringV2": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3635.7126235961914,
+    "params_used": {
+      "game_id": "0022300001"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "BoxScoreScoringV3": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3594.9130058288574,
+    "params_used": {
+      "game_id": "0022300001"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "BoxScoreSummaryV2": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3578.0320167541504,
+    "params_used": {
+      "game_id": "0022300001"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "BoxScoreTraditionalV2": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3624.591827392578,
+    "params_used": {
+      "game_id": "0022300001"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "BoxScoreTraditionalV3": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3571.8700885772705,
+    "params_used": {
+      "game_id": "0022300001"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "BoxScoreUsageV2": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3598.60897064209,
+    "params_used": {
+      "game_id": "0022300001"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "BoxScoreUsageV3": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3598.957061767578,
+    "params_used": {
+      "game_id": "0022300001"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "CommonAllPlayers": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3590.362071990967,
+    "params_used": {
+      "season": "2023-24"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "CommonPlayerInfo": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3636.445999145508,
+    "params_used": {
+      "player_id": 2544
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "CommonPlayoffSeries": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3631.098985671997,
+    "params_used": {
+      "season": "2023-24"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "CommonTeamRoster": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3599.750757217407,
+    "params_used": {
+      "season": "2023-24",
+      "team_id": 1610612752
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "CommonTeamYears": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3643.1009769439697,
+    "params_used": {},
+    "status": "error",
+    "total_rows": 0
+  },
+  "CumeStatsPlayer": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3639.143943786621,
+    "params_used": {
+      "game_ids": "0022300001",
+      "player_id": 2544,
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "CumeStatsPlayerGames": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3623.425006866455,
+    "params_used": {
+      "player_id": 2544,
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "CumeStatsTeam": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3596.7888832092285,
+    "params_used": {
+      "game_ids": "0022300001",
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season",
+      "team_id": 1610612752
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "CumeStatsTeamGames": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3597.599983215332,
+    "params_used": {
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season",
+      "team_id": 1610612752
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "DefenseHub": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3576.925039291382,
+    "params_used": {
+      "season": "2023-24",
+      "season_type_playoffs": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "DraftBoard": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3651.7162322998047,
+    "params_used": {},
+    "status": "error",
+    "total_rows": 0
+  },
+  "DraftCombineDrillResults": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3576.014995574951,
+    "params_used": {},
+    "status": "error",
+    "total_rows": 0
+  },
+  "DraftCombineNonStationaryShooting": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3606.5008640289307,
+    "params_used": {},
+    "status": "error",
+    "total_rows": 0
+  },
+  "DraftCombinePlayerAnthro": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3573.2688903808594,
+    "params_used": {},
+    "status": "error",
+    "total_rows": 0
+  },
+  "DraftCombineSpotShooting": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3605.276107788086,
+    "params_used": {},
+    "status": "error",
+    "total_rows": 0
+  },
+  "DraftCombineStats": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3607.1441173553467,
+    "params_used": {},
+    "status": "error",
+    "total_rows": 0
+  },
+  "DraftHistory": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3590.4412269592285,
+    "params_used": {},
+    "status": "error",
+    "total_rows": 0
+  },
+  "Endpoint": {
+    "datasets_found": [],
+    "latency_ms": 0,
+    "reason": "Could not satisfy required params: ['args', 'kwargs']",
+    "status": "skipped_untestable",
+    "total_rows": 0
+  },
+  "FantasyWidget": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3594.320774078369,
+    "params_used": {
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "FranchiseHistory": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3584.857940673828,
+    "params_used": {},
+    "status": "error",
+    "total_rows": 0
+  },
+  "FranchiseLeaders": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3630.5909156799316,
+    "params_used": {
+      "team_id": 1610612752
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "FranchisePlayers": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3630.2499771118164,
+    "params_used": {
+      "per_mode_detailed": "PerGame",
+      "season_type_all_star": "Regular Season",
+      "team_id": 1610612752
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "GLAlumBoxScoreSimilarityScore": {
+    "datasets_found": [],
+    "latency_ms": 0,
+    "reason": "Could not satisfy required params: ['person2_id', 'person1_id']",
+    "status": "skipped_untestable",
+    "total_rows": 0
+  },
+  "GameRotation": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3578.281879425049,
+    "params_used": {
+      "game_id": "0022300001"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "HomePageLeaders": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3610.337972640991,
+    "params_used": {
+      "season": "2023-24",
+      "season_type_playoffs": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "HomePageV2": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3575.978994369507,
+    "params_used": {
+      "season": "2023-24",
+      "season_type_playoffs": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "HustleStatsBoxScore": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3646.5530395507812,
+    "params_used": {
+      "game_id": "0022300001"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "ISTStandings": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3584.514856338501,
+    "params_used": {
+      "season": "2023-24"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "InfographicFanDuelPlayer": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3581.1569690704346,
+    "params_used": {
+      "game_id": "0022300001"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "LeadersTiles": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3587.858200073242,
+    "params_used": {
+      "season": "2023-24",
+      "season_type_playoffs": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "LeagueDashLineups": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3651.7250537872314,
+    "params_used": {
+      "per_mode_detailed": "PerGame",
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "LeagueDashOppPtShot": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3595.0992107391357,
+    "params_used": {
+      "per_mode_simple": "PerGame",
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "LeagueDashPlayerBioStats": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3617.1958446502686,
+    "params_used": {
+      "per_mode_simple": "PerGame",
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "LeagueDashPlayerClutch": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3580.756902694702,
+    "params_used": {
+      "per_mode_detailed": "PerGame",
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "LeagueDashPlayerPtShot": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3581.8300247192383,
+    "params_used": {
+      "per_mode_simple": "PerGame",
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "LeagueDashPlayerShotLocations": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3589.7600650787354,
+    "params_used": {
+      "per_mode_detailed": "PerGame",
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "LeagueDashPlayerStats": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3576.093912124634,
+    "params_used": {
+      "per_mode_detailed": "PerGame",
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "LeagueDashPtDefend": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3596.5189933776855,
+    "params_used": {
+      "per_mode_simple": "PerGame",
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "LeagueDashPtStats": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3573.1351375579834,
+    "params_used": {
+      "per_mode_simple": "PerGame",
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "LeagueDashPtTeamDefend": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3574.441909790039,
+    "params_used": {
+      "per_mode_simple": "PerGame",
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "LeagueDashTeamClutch": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3618.8302040100098,
+    "params_used": {
+      "per_mode_detailed": "PerGame",
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "LeagueDashTeamPtShot": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3603.893995285034,
+    "params_used": {
+      "per_mode_simple": "PerGame",
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "LeagueDashTeamShotLocations": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3591.7680263519287,
+    "params_used": {
+      "per_mode_detailed": "PerGame",
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "LeagueDashTeamStats": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3592.4737453460693,
+    "params_used": {
+      "per_mode_detailed": "PerGame",
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "LeagueGameFinder": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3561.387062072754,
+    "params_used": {
+      "season_nullable": "2023-24",
+      "season_type_nullable": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "LeagueGameLog": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3591.9549465179443,
+    "params_used": {
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "LeagueHustleStatsPlayer": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3592.0069217681885,
+    "params_used": {
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "LeagueHustleStatsTeam": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3573.3120441436768,
+    "params_used": {
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "LeagueLeaders": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "Expecting value: line 2 column 1 (char 1)",
+    "latency_ms": 335.953950881958,
+    "params_used": {
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "LeagueLineupViz": {
+    "datasets_found": [],
+    "latency_ms": 0,
+    "reason": "Could not satisfy required params: ['minutes_min']",
+    "status": "skipped_untestable",
+    "total_rows": 0
+  },
+  "LeaguePlayerOnDetails": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3511.0247135162354,
+    "params_used": {
+      "per_mode_detailed": "PerGame",
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season",
+      "team_id": 1610612752
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "LeagueSeasonMatchups": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3566.422939300537,
+    "params_used": {
+      "per_mode_simple": "PerGame",
+      "season": "2023-24",
+      "season_type_playoffs": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "LeagueStandings": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3581.606864929199,
+    "params_used": {
+      "season": "2023-24",
+      "season_nullable": "2023-24"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "LeagueStandingsV3": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3624.1977214813232,
+    "params_used": {
+      "season": "2023-24",
+      "season_nullable": "2023-24"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "MatchupsRollup": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3605.9508323669434,
+    "params_used": {
+      "per_mode_simple": "PerGame",
+      "season": "2023-24",
+      "season_type_playoffs": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "PlayByPlay": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3568.37797164917,
+    "params_used": {
+      "game_id": "0022300001"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "PlayByPlayV2": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3764.6708488464355,
+    "params_used": {
+      "game_id": "0022300001"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "PlayByPlayV3": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3590.92378616333,
+    "params_used": {
+      "game_id": "0022300001"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "PlayerAwards": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3644.5329189300537,
+    "params_used": {
+      "player_id": 2544
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "PlayerCareerByCollege": {
+    "datasets_found": [],
+    "latency_ms": 0,
+    "reason": "Could not satisfy required params: ['college']",
+    "status": "skipped_untestable",
+    "total_rows": 0
+  },
+  "PlayerCareerByCollegeRollup": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3568.4330463409424,
+    "params_used": {
+      "per_mode_simple": "PerGame",
+      "season_nullable": "2023-24",
+      "season_type_all_star": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "PlayerCareerStats": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3616.0669326782227,
+    "params_used": {
+      "player_id": 2544
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "PlayerCompare": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3621.277093887329,
+    "params_used": {
+      "per_mode_detailed": "PerGame",
+      "player_id_list": 2544,
+      "season": "2023-24",
+      "season_type_playoffs": "Regular Season",
+      "vs_player_id_list": 2544
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "PlayerDashPtPass": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3612.048864364624,
+    "params_used": {
+      "per_mode_simple": "PerGame",
+      "player_id": 2544,
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season",
+      "team_id": 1610612752
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "PlayerDashPtReb": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3657.181978225708,
+    "params_used": {
+      "per_mode_simple": "PerGame",
+      "player_id": 2544,
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season",
+      "team_id": 1610612752
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "PlayerDashPtShotDefend": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3582.0858478546143,
+    "params_used": {
+      "per_mode_simple": "PerGame",
+      "player_id": 2544,
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season",
+      "team_id": 1610612752
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "PlayerDashPtShots": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3570.146083831787,
+    "params_used": {
+      "per_mode_simple": "PerGame",
+      "player_id": 2544,
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season",
+      "team_id": 1610612752
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "PlayerDashboardByClutch": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3650.110960006714,
+    "params_used": {
+      "per_mode_detailed": "PerGame",
+      "player_id": 2544,
+      "season": "2023-24",
+      "season_type_playoffs": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "PlayerDashboardByGameSplits": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3605.7541370391846,
+    "params_used": {
+      "per_mode_detailed": "PerGame",
+      "player_id": 2544,
+      "season": "2023-24",
+      "season_type_playoffs": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "PlayerDashboardByGeneralSplits": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3596.431016921997,
+    "params_used": {
+      "per_mode_detailed": "PerGame",
+      "player_id": 2544,
+      "season": "2023-24",
+      "season_type_playoffs": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "PlayerDashboardByLastNGames": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3658.864974975586,
+    "params_used": {
+      "per_mode_detailed": "PerGame",
+      "player_id": 2544,
+      "season": "2023-24",
+      "season_type_playoffs": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "PlayerDashboardByShootingSplits": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3578.524112701416,
+    "params_used": {
+      "per_mode_detailed": "PerGame",
+      "player_id": 2544,
+      "season": "2023-24",
+      "season_type_playoffs": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "PlayerDashboardByTeamPerformance": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3605.776071548462,
+    "params_used": {
+      "per_mode_detailed": "PerGame",
+      "player_id": 2544,
+      "season": "2023-24",
+      "season_type_playoffs": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "PlayerDashboardByYearOverYear": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3576.6961574554443,
+    "params_used": {
+      "per_mode_detailed": "PerGame",
+      "player_id": 2544,
+      "season": "2023-24",
+      "season_type_playoffs": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "PlayerEstimatedMetrics": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3568.835973739624,
+    "params_used": {
+      "season": "2023-24"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "PlayerFantasyProfile": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3586.113929748535,
+    "params_used": {
+      "player_id": 2544,
+      "season": "2023-24",
+      "season_type_playoffs": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "PlayerFantasyProfileBarGraph": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3570.028781890869,
+    "params_used": {
+      "player_id": 2544,
+      "season": "2023-24"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "PlayerGameLog": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3577.43501663208,
+    "params_used": {
+      "player_id": 2544,
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "PlayerGameLogs": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3573.7709999084473,
+    "params_used": {
+      "season_nullable": "2023-24",
+      "season_type_nullable": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "PlayerGameStreakFinder": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3581.0298919677734,
+    "params_used": {
+      "season_nullable": "2023-24",
+      "season_type_nullable": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "PlayerIndex": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3615.3130531311035,
+    "params_used": {
+      "season": "2023-24"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "PlayerNextNGames": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3581.8209648132324,
+    "params_used": {
+      "player_id": 2544,
+      "season_type_all_star": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "PlayerProfileV2": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3606.055974960327,
+    "params_used": {
+      "player_id": 2544
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "PlayerVsPlayer": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3710.667133331299,
+    "params_used": {
+      "per_mode_detailed": "PerGame",
+      "player_id": 2544,
+      "season": "2023-24",
+      "season_type_playoffs": "Regular Season",
+      "vs_player_id": 2544
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "PlayoffPicture": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "Expecting value: line 2 column 1 (char 1)",
+    "latency_ms": 441.43104553222656,
+    "params_used": {},
+    "status": "error",
+    "total_rows": 0
+  },
+  "ScoreboardV2": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3507.3862075805664,
+    "params_used": {},
+    "status": "error",
+    "total_rows": 0
+  },
+  "ShotChartDetail": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3572.4101066589355,
+    "params_used": {
+      "player_id": 2544,
+      "season_nullable": "2023-24",
+      "season_type_all_star": "Regular Season",
+      "team_id": 1610612752
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "ShotChartLeagueWide": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3598.849058151245,
+    "params_used": {
+      "season": "2023-24"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "ShotChartLineupDetail": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3579.691171646118,
+    "params_used": {
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "SynergyPlayTypes": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3581.1078548431396,
+    "params_used": {
+      "per_mode_simple": "PerGame",
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "TeamAndPlayersVsPlayers": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3600.966215133667,
+    "params_used": {
+      "per_mode_detailed": "PerGame",
+      "player_id1": 2544,
+      "player_id2": 2544,
+      "player_id3": 2544,
+      "player_id4": 2544,
+      "player_id5": 2544,
+      "season": "2023-24",
+      "season_type_playoffs": "Regular Season",
+      "team_id": 1610612752,
+      "vs_player_id1": 2544,
+      "vs_player_id2": 2544,
+      "vs_player_id3": 2544,
+      "vs_player_id4": 2544,
+      "vs_player_id5": 2544,
+      "vs_team_id": 1610612752
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "TeamDashLineups": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3571.5157985687256,
+    "params_used": {
+      "per_mode_detailed": "PerGame",
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season",
+      "team_id": 1610612752
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "TeamDashPtPass": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3658.064126968384,
+    "params_used": {
+      "per_mode_simple": "PerGame",
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season",
+      "team_id": 1610612752
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "TeamDashPtReb": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3595.4458713531494,
+    "params_used": {
+      "per_mode_simple": "PerGame",
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season",
+      "team_id": 1610612752
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "TeamDashPtShots": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3568.0439472198486,
+    "params_used": {
+      "per_mode_simple": "PerGame",
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season",
+      "team_id": 1610612752
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "TeamDashboardByGeneralSplits": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3555.752754211426,
+    "params_used": {
+      "per_mode_detailed": "PerGame",
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season",
+      "team_id": 1610612752
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "TeamDashboardByShootingSplits": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3580.457925796509,
+    "params_used": {
+      "per_mode_detailed": "PerGame",
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season",
+      "team_id": 1610612752
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "TeamDetails": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3630.8040618896484,
+    "params_used": {
+      "team_id": 1610612752
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "TeamEstimatedMetrics": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3583.415746688843,
+    "params_used": {
+      "season": "2023-24"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "TeamGameLog": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3577.1431922912598,
+    "params_used": {
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season",
+      "team_id": 1610612752
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "TeamGameLogs": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3658.5330963134766,
+    "params_used": {
+      "season_nullable": "2023-24",
+      "season_type_nullable": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "TeamGameStreakFinder": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3571.777820587158,
+    "params_used": {
+      "season_nullable": "2023-24",
+      "season_type_nullable": "Regular Season"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "TeamHistoricalLeaders": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3583.5440158843994,
+    "params_used": {
+      "team_id": 1610612752
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "TeamInfoCommon": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3602.7309894561768,
+    "params_used": {
+      "season_nullable": "2023-24",
+      "season_type_nullable": "Regular Season",
+      "team_id": 1610612752
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "TeamPlayerDashboard": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3911.6830825805664,
+    "params_used": {
+      "per_mode_detailed": "PerGame",
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season",
+      "team_id": 1610612752
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "TeamPlayerOnOffDetails": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3615.488052368164,
+    "params_used": {
+      "per_mode_detailed": "PerGame",
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season",
+      "team_id": 1610612752
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "TeamPlayerOnOffSummary": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3590.4781818389893,
+    "params_used": {
+      "per_mode_detailed": "PerGame",
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season",
+      "team_id": 1610612752
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "TeamVsPlayer": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3690.4518604278564,
+    "params_used": {
+      "per_mode_detailed": "PerGame",
+      "season": "2023-24",
+      "season_type_playoffs": "Regular Season",
+      "team_id": 1610612752,
+      "vs_player_id": 2544
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "TeamYearByYearStats": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3616.8580055236816,
+    "params_used": {
+      "per_mode_simple": "PerGame",
+      "season_type_all_star": "Regular Season",
+      "team_id": 1610612752
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "VideoDetails": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3579.3631076812744,
+    "params_used": {
+      "player_id": 2544,
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season",
+      "team_id": 1610612752
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "VideoDetailsAsset": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3572.777032852173,
+    "params_used": {
+      "player_id": 2544,
+      "season": "2023-24",
+      "season_type_all_star": "Regular Season",
+      "team_id": 1610612752
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "VideoEvents": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3592.594861984253,
+    "params_used": {
+      "game_id": "0022300001"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "VideoEventsAsset": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3592.846155166626,
+    "params_used": {
+      "game_id": "0022300001"
+    },
+    "status": "error",
+    "total_rows": 0
+  },
+  "VideoStatus": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3619.3301677703857,
+    "params_used": {},
+    "status": "error",
+    "total_rows": 0
+  },
+  "WinProbabilityPBP": {
+    "cached": false,
+    "datasets_found": [],
+    "error": "HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=2)",
+    "latency_ms": 3582.25679397583,
+    "params_used": {
+      "game_id": "0022300001"
+    },
+    "status": "error",
+    "total_rows": 0
+  }
+}

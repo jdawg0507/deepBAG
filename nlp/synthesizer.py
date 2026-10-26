@@ -2,14 +2,23 @@
 Synthesizer for deepBAG.
 Receives structured data fetched directly via Python code execution and synthesizes
 concise, analytical responses in a single LLM turn.
-Dynamically injects Chart.js specifications ONLY when the query or data warrants a chart.
+Implements:
+1. Standard 1-turn synthesis with conditional Chart.js injection (legacy path)
+2. Mechanical Number-Locked Research Synthesis (v2 engine): ID-only generation [C1], [C2],
+   post-generation replacement, and verifier check (fail-closed if unaligned).
+Unified across Nebius Token Factory and Google Gemini via UnifiedLLMClient.
 """
 import os
 import json
 import logging
-from typing import Any, Dict, Generator, Optional
-import google.generativeai as genai
+from typing import Any, Dict, Generator, Optional, List
+
 from core.telemetry import TelemetryManager
+from core.llm_client import UnifiedLLMClient
+from core.evidence import EvidenceTable
+from core.verifier import SynthesisVerifier
+from core.session import ScopeReceipt
+from core.schemas import IntentContract
 
 logger = logging.getLogger("deepbag.synthesizer")
 
@@ -18,6 +27,16 @@ Answer the user's question directly, accurately, and concisely using the provide
 Highlight key statistics and trends clearly with markdown bullet points or tables where helpful.
 Never hallucinate or extrapolate numbers not present in the provided dataset.
 If the data indicates an error or no records found, explain what occurred clearly and politely."""
+
+NUMBER_LOCK_RESEARCH_PROMPT = """You are the deepBAG Autonomous Statistical Research Synthesizer.
+Answer the user's question directly, insightfully, and concisely based strictly on the registered Evidence Claims.
+
+CRITICAL MECHANICAL NUMBER LOCK RULES:
+1. You must NEVER compute, estimate, or write out bare numbers yourself.
+2. Every numerical value (points, percentages, ratings, differentials) MUST be referenced ONLY using its exact claim ID in brackets, e.g. [C1], [C2], [C3].
+3. Code replaces these claim IDs with exact values and mechanically audits every numeral in the text. An unaligned number causes immediate rejection.
+4. For subjective or thesis questions, state the primary conclusion first, then present the strongest counter-evidence and sample limitations.
+5. If an ACH matrix is provided, explain which hypothesis is least-refuted and why competing explanations fail."""
 
 CHARTJS_INSTRUCTION = """
 CHART GENERATION REQUIREMENT:
@@ -46,11 +65,6 @@ Embed a valid JSON specification inside a ```chartjs ``` code block formatted as
 Ensure the JSON is strictly valid. Always accompany the chart with analytical narrative text."""
 
 def should_inject_chart(query: str, data: Any) -> bool:
-    """
-    Dual-trigger for Chart.js instruction injection:
-    1. Query contains comparison, trend, or chart keywords.
-    2. Data contains >= 3 comparable numeric records.
-    """
     q_lower = query.lower()
     chart_keywords = [
         "vs", "compare", "comparison", "trend", "chart", "graph", "plot", 
@@ -59,7 +73,6 @@ def should_inject_chart(query: str, data: Any) -> bool:
     if any(k in q_lower for k in chart_keywords):
         return True
 
-    # Check data row count
     if isinstance(data, list) and len(data) >= 3:
         return True
     if isinstance(data, dict):
@@ -72,7 +85,6 @@ def should_inject_chart(query: str, data: Any) -> bool:
     return False
 
 def truncate_dataset_for_llm(data: Any, max_rows: int = 15) -> Any:
-    """Truncates large datasets to prevent overflowing context while retaining critical stats."""
     if not data:
         return data
     if isinstance(data, list):
@@ -88,21 +100,10 @@ def truncate_dataset_for_llm(data: Any, max_rows: int = 15) -> Any:
     return data
 
 class Synthesizer:
-    """
-    Performs 1-turn synthesis from structured API/SQL data to user answers.
-    """
     def __init__(self, default_model: Optional[str] = None):
-        from dotenv import load_dotenv
-        load_dotenv()
-        self.default_model = default_model or os.environ.get("GEMINI_MODEL", "gemini-3.5-flash-lite")
-        api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
-        if api_key:
-            genai.configure(api_key=api_key, transport="rest")
-        self.fallback_models = [
-            "gemini-3.5-flash-lite",
-            "gemini-flash-lite-latest",
-            "gemini-3.1-flash-lite",
-        ]
+        self.llm_client = UnifiedLLMClient(model=default_model)
+        self.verifier = SynthesisVerifier()
+        self.default_model = self.llm_client.model
 
     def synthesize(
         self,
@@ -112,9 +113,9 @@ class Synthesizer:
         model_name: Optional[str] = None,
     ) -> Generator[Dict[str, Any], None, None]:
         """
-        Synthesize the final answer using a single LLM call.
+        Legacy 1-turn synthesis path for simple Q&A lookups.
         """
-        chosen_model = model_name or self.default_model
+        target_model = model_name or self.default_model
         inject_chart = should_inject_chart(query, data)
         
         system_instruction = BASE_ANALYST_PROMPT
@@ -131,35 +132,114 @@ Retrieved Data:
 
 Provide a direct, complete, and insightful answer to the user's question."""
 
-        yield {"type": "thought", "content": f"Synthesizing final analytical response with {chosen_model}..."}
+        yield {"type": "thought", "content": f"Synthesizing response with {self.llm_client.provider} ({target_model})..."}
 
-        models_to_try = [chosen_model] + [m for m in self.fallback_models if m != chosen_model]
-        last_error = None
+        try:
+            final_text = self.llm_client.generate(
+                user_prompt=user_prompt,
+                system_prompt=system_instruction,
+                temperature=0.2,
+                model_name=target_model
+            )
+            yield {"type": "final_answer", "content": final_text}
+        except Exception as e:
+            logger.error(f"Synthesis failed: {e}")
+            yield {"type": "final_answer", "content": f"Failed to synthesize response: {e}"}
+
+    def synthesize_research(
+        self,
+        query: str,
+        evidence: EvidenceTable,
+        intent: IntentContract,
+        ach_matrix_md: Optional[str] = None,
+        model_name: Optional[str] = None,
+    ) -> Generator[Dict[str, Any], None, None]:
+        """
+        v2 Mechanical Number-Locked Research Engine Synthesis:
+        1. Emits prompt containing ONLY [C1], [C2] registered claims.
+        2. Replaces IDs with verified values in code.
+        3. Runs SynthesisVerifier. Fails closed if unaligned.
+        4. Renders Scope Receipt, Narrative, ACH Matrix (if thesis), and Evidence Appendix.
+        """
+        target_model = model_name or self.default_model
+        yield {"type": "thought", "content": "Executing PAL-style synthesis with mechanical number lock..."}
         
-        for model_candidate in models_to_try:
-            try:
-                with TelemetryManager.start_span("deepbag.llm_synthesis", {"model": model_candidate}) as span:
-                    model = genai.GenerativeModel(
-                        model_candidate,
-                        system_instruction=system_instruction,
-                    )
-                    response = model.generate_content(
-                        user_prompt,
-                        generation_config={"temperature": 0.2},
-                    )
-                    final_text = response.text if response else "No response generated."
-                    TelemetryManager.record_llm_generation(
-                        name="synthesizer",
-                        model=model_candidate,
-                        prompt=user_prompt,
-                        completion=final_text,
-                    )
-                    yield {"type": "final_answer", "content": final_text}
-                    return
-            except Exception as e:
-                logger.warning(f"Synthesis failed with {model_candidate}: {e}")
-                last_error = e
-                continue
+        claims_table_md = evidence.render_markdown_table()
+        scope_receipt = ScopeReceipt.format_receipt(intent)
+        
+        ach_section = f"\n\nEvaluated ACH Matrix:\n{ach_matrix_md}" if ach_matrix_md else ""
+        
+        user_prompt = f"""User Question: {query}
 
-        error_message = f"Failed to synthesize response across models: {last_error}"
-        yield {"type": "final_answer", "content": error_message}
+Scope & Interpretation:
+{scope_receipt}
+
+Registered Claim Ledger (Use ONLY these claim IDs: e.g. [C1], [C2]):
+{claims_table_md}
+{ach_section}
+
+Synthesize a clear, analytical answer. Reference statistics ONLY via claim IDs in brackets."""
+
+        # First generation attempt
+        raw_synthesis = self.llm_client.generate(
+            user_prompt=user_prompt,
+            system_prompt=NUMBER_LOCK_RESEARCH_PROMPT,
+            temperature=0.2,
+            model_name=target_model
+        )
+        
+        # Replace claim IDs with verified values
+        substituted_text = evidence.substitute_ids(raw_synthesis)
+        
+        # Post-check verification
+        is_thesis = (intent.question_type == "thesis")
+        passed, reason, unaligned = self.verifier.verify_payload(
+            substituted_text,
+            evidence,
+            is_thesis=is_thesis
+        )
+        
+        if not passed:
+            yield {"type": "thought", "content": f"Verification failed ({reason}). Regenerating once with named failure..."}
+            retry_prompt = user_prompt + f"\n\nERROR IN PREVIOUS DRAFT: {reason}. You must NOT invent any numbers. Use only [C1], [C2]."
+            raw_synthesis = self.llm_client.generate(
+                user_prompt=retry_prompt,
+                system_prompt=NUMBER_LOCK_RESEARCH_PROMPT,
+                temperature=0.1,
+                model_name=target_model
+            )
+            substituted_text = evidence.substitute_ids(raw_synthesis)
+            passed, reason, unaligned = self.verifier.verify_payload(
+                substituted_text,
+                evidence,
+                is_thesis=is_thesis
+            )
+
+        verification_badge = "🛡️ **Number Lock: ALIGNED** (100% of numerals verified against evidence ledger)" if passed else (
+            f"⚠️ **Number Lock: PARTIAL** ({reason})"
+        )
+        
+        yield {
+            "type": "verifier_status",
+            "passed": passed,
+            "status": "ALIGNED" if passed else "UNALIGNED",
+            "unaligned": unaligned,
+        }
+
+        # Build final rendered markdown payload
+        final_payload = (
+            f"{scope_receipt}\n\n"
+            f"{substituted_text}\n\n"
+        )
+        
+        if ach_matrix_md:
+            final_payload += f"### Competing Hypotheses (ACH Matrix)\n{ach_matrix_md}\n\n"
+            
+        final_payload += (
+            f"---\n"
+            f"### Statistical Provenance Appendix\n"
+            f"{verification_badge}\n\n"
+            f"{claims_table_md}\n"
+        )
+
+        yield {"type": "final_answer", "content": final_payload}

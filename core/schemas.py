@@ -254,3 +254,84 @@ def validate_tool_call(endpoint_class_or_name: Any, raw_params: Union[str, Dict[
     # Return dict excluding None values so defaults from the endpoint work
     return validated_instance.model_dump(exclude_none=True)
 
+
+# ---------------------------------------------------------
+# 4. Research Engine v2 Schemas (Intent Contract & CAESURA Plan)
+# ---------------------------------------------------------
+
+class QuestionType(str, Enum):
+    SINGLE = "single"
+    COMPARISON = "comparison"
+    THESIS = "thesis"
+    DEFINITION = "definition"
+    LONGITUDINAL = "longitudinal"
+    PARADOX = "paradox"
+    UNKNOWN = "unknown"
+
+
+class ScopeFilters(BaseModel):
+    """Stathead filter taxonomy representing full query scope"""
+    model_config = ConfigDict(extra="ignore")
+    
+    location: Optional[str] = None
+    opponent_team_id: Optional[int] = None
+    outcome: Optional[str] = None
+    game_segment: Optional[str] = None
+    period: Optional[int] = None
+    per_mode: Optional[str] = None
+    measure_type: Optional[str] = None
+    last_n_games: Optional[int] = None
+    date_from: Optional[str] = None
+    date_to: Optional[str] = None
+
+
+class EntityRef(BaseModel):
+    """Resolved NBA entity with canonical ID"""
+    name: str
+    type: str = Field(..., description="'player' | 'team'")
+    id: Optional[int] = None
+
+
+class IntentContract(BaseModel):
+    """
+    v2 Intent-first JSON contract emitted by LLM and validated
+    against this schema before any endpoint execution.
+    """
+    model_config = ConfigDict(extra="ignore")
+    
+    question_type: QuestionType = Field(..., description="Classification of the question structure")
+    entities: List[EntityRef] = Field(default_factory=list, description="Resolved players or teams")
+    season: Optional[str] = Field(None, description="e.g. '2023-24' or null")
+    season_type: Optional[str] = Field("Regular Season", description="'Regular Season' | 'Playoffs' | null")
+    filters: ScopeFilters = Field(default_factory=ScopeFilters)
+    metrics: List[str] = Field(default_factory=list, description="Requested metric names, e.g. TS%, on_off_net, PPG")
+    group_by: List[str] = Field(default_factory=lambda: ["player", "season"])
+    joins: List[Dict[str, Any]] = Field(default_factory=list)
+    interpretation: str = Field(
+        ...,
+        description="Words only: what vague/slang terms in the question are taken to mean in this context. No numbers."
+    )
+    clarification_needed: Optional[str] = Field(None, description="Enumerated question if gap cannot be resolved by assumption")
+    assumptions: List[str] = Field(
+        default_factory=list,
+        description="Transparent scope assumptions disclosed to the user"
+    )
+
+
+class PlanStep(BaseModel):
+    """Individual execution step in a CAESURA logical plan"""
+    step_id: str = Field(..., description="e.g. S1, S2")
+    endpoint: str = Field(..., description="Target nba_api endpoint name")
+    params: Dict[str, Any] = Field(default_factory=dict)
+    join_keys: List[str] = Field(default_factory=list, description="e.g. ['player_id', 'season']")
+    description: str = Field(default="")
+    required: bool = Field(default=True, description="Whether failure of this step halts the plan")
+
+
+class LogicalPlan(BaseModel):
+    """DAG of planned endpoint calls, joins, and aggregates"""
+    intent: IntentContract
+    steps: List[PlanStep] = Field(default_factory=list)
+    target_claims: List[str] = Field(default_factory=list)
+
+

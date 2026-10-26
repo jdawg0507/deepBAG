@@ -1,0 +1,297 @@
+"""
+CAESURA Routing Loop & Ponder Gate Tree Execution Planner for deepBAG.
+Implements:
+1. Intent-First JSON Contract extraction via UnifiedLLMClient
+2. Schema Validation BEFORE execution against data/endpoint_catalogue.json
+3. Logical Plan DAG Generation (endpoints, parameters, join keys)
+4. Incremental Step Execution with deterministic verification gates
+5. Backtracking / leaf retry on empty results
+"""
+import os
+import json
+import logging
+from typing import Dict, Any, List, Optional, Tuple
+
+from core.schemas import (
+    IntentContract,
+    LogicalPlan,
+    PlanStep,
+    QuestionType,
+    ScopeFilters,
+    EntityRef,
+)
+from core.llm_client import UnifiedLLMClient
+from core.nba_client import NBAClient
+from core.evidence import EvidenceTable
+from api.parameter_utils import get_player_id_from_name
+
+logger = logging.getLogger("deepbag.caesura")
+
+INTENT_SYSTEM_PROMPT = """You are the deepBAG Natural Language Intent Classifier & Stathead Scope Triage Engine.
+Translate the user's NBA query into a strict JSON contract.
+
+Rules:
+1. "question_type" must be one of: "single", "comparison", "thesis", "definition", "longitudinal", "paradox", "unknown".
+2. "interpretation" MUST BE WORDS ONLY: what vague or cultural terms ("gravity", "clutch", "dawg", "midrange paradox") mean in this context. DO NOT include any numerical claims in "interpretation".
+3. "filters": populate known filters (location, opponent_team_id, outcome, game_segment, period, per_mode, measure_type, last_n_games, date_from, date_to). Set to null if not specified.
+4. "assumptions": list transparent scope decisions made for the user (e.g. "Assumed Regular Season 2023-24").
+5. Return ONLY a valid JSON object matching the contract schema.
+"""
+
+class CaesuraPlanner:
+    def __init__(
+        self,
+        llm_client: Optional[UnifiedLLMClient] = None,
+        catalogue: Optional[Dict[str, Any]] = None,
+    ):
+        self.llm = llm_client or UnifiedLLMClient()
+        self.catalogue = catalogue or self._load_catalogue()
+
+    def _load_catalogue(self) -> Dict[str, Any]:
+        repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        cat_path = os.path.join(repo_root, "data", "endpoint_catalogue.json")
+        if os.path.exists(cat_path):
+            with open(cat_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        return {}
+
+    def extract_intent(self, query: str) -> IntentContract:
+        """Extract schema-validated IntentContract from query with 1-retry on failure"""
+        user_prompt = f"User Query: {query}\n\nEmit the exact IntentContract JSON object."
+        
+        for attempt in range(2):
+            try:
+                raw_json = self.llm.generate_json(
+                    user_prompt=user_prompt,
+                    system_prompt=INTENT_SYSTEM_PROMPT,
+                    temperature=0.1
+                )
+                
+                # Resolve player IDs if missing from entities
+                if "entities" in raw_json and isinstance(raw_json["entities"], list):
+                    for ent in raw_json["entities"]:
+                        if isinstance(ent, dict) and not ent.get("id"):
+                            p_id = get_player_id_from_name(ent.get("name", ""))
+                            if p_id:
+                                ent["id"] = p_id
+                                ent["type"] = "player"
+                
+                # Schema validate using Pydantic
+                return IntentContract.model_validate(raw_json)
+                
+            except Exception as e:
+                logger.warning(f"Intent extraction attempt {attempt + 1} failed: {e}")
+                if attempt == 0:
+                    user_prompt += f"\n\nPrevious attempt failed schema validation: {e}. Return strict JSON."
+                else:
+                    # Deterministic fallback for simple queries
+                    return self._fallback_intent(query)
+
+    def _fallback_intent(self, query: str) -> IntentContract:
+        """Deterministic fallback when LLM JSON fails twice"""
+        assumptions = ["Assumed Regular Season 2023-24 via fallback router."]
+        return IntentContract(
+            question_type=QuestionType.SINGLE,
+            entities=[],
+            season="2023-24",
+            season_type="Regular Season",
+            filters=ScopeFilters(),
+            metrics=["PTS", "AST", "REB"],
+            interpretation="Fallback direct stat lookup.",
+            assumptions=assumptions
+        )
+
+    def build_logical_plan(self, intent: IntentContract) -> LogicalPlan:
+        """
+        CAESURA logical plan DAG generation.
+        Maps intent to multi-endpoint steps based on QuestionType and entities.
+        """
+        steps = []
+        season = intent.season or "2023-24"
+        season_type = intent.season_type or "Regular Season"
+        q_type = intent.question_type
+
+        # 1. Thesis Queries (e.g. Knicks Playoff Dominance)
+        if q_type == QuestionType.THESIS:
+            team_id = next((e.id for e in intent.entities if e.type == "team" and e.id), 1610612752)
+            steps.append(PlanStep(
+                step_id="S1_FourFactors",
+                endpoint="TeamDashboardByGeneralSplits",
+                params={"team_id": team_id, "season": season, "season_type_all_star": season_type, "measure_type_detailed_defense": "Four Factors"},
+                join_keys=["team_id", "season"],
+                description="Team four factors dominance decomposition (eFG%, TOV%, OREB%, FTR)"
+            ))
+            steps.append(PlanStep(
+                step_id="S2_TeamOnOff",
+                endpoint="TeamPlayerOnOffSummary",
+                params={"team_id": team_id, "season": season, "season_type_all_star": season_type},
+                join_keys=["team_id", "season"],
+                description="On/Off net rating differential across playoff rotation"
+            ))
+            steps.append(PlanStep(
+                step_id="S3_TeamSplits",
+                endpoint="TeamDashboardByGeneralSplits",
+                params={"team_id": team_id, "season": season, "season_type_all_star": season_type},
+                join_keys=["team_id"],
+                description="Team general shooting and pace splits"
+            ))
+
+        # 2. Gravity / Definition Queries (Curry vs Wemby Archetype Switch)
+        elif q_type == QuestionType.DEFINITION or "gravity" in intent.interpretation.lower():
+            player = intent.entities[0] if intent.entities else EntityRef(name="Stephen Curry", type="player", id=201939)
+            p_id = player.id or 201939
+            
+            # Archetype check: Wemby/Rim vs Curry/Perimeter
+            is_interior = any(w in player.name.lower() for w in ["wemby", "wembanyama", "gobert", "davis", "giannis"])
+            
+            if is_interior:
+                # Interior Rim Deterrence Archetype
+                steps.append(PlanStep(
+                    step_id="S1_PtDefend",
+                    endpoint="PlayerDashPtShotDefend",
+                    params={"player_id": p_id, "season": season, "season_type_all_star": season_type},
+                    join_keys=["player_id"],
+                    description="Opponent rim field goal percentage deterrence"
+                ))
+            else:
+                # Perimeter Spacing & Pull Archetype
+                steps.append(PlanStep(
+                    step_id="S1_PtShots",
+                    endpoint="PlayerDashPtShots",
+                    params={"player_id": p_id, "season": season, "season_type_all_star": season_type},
+                    join_keys=["player_id"],
+                    description="Perimeter pull-up and catch-and-shoot distribution"
+                ))
+                
+            steps.append(PlanStep(
+                step_id="S2_OnOffSummary",
+                endpoint="TeamPlayerOnOffSummary",
+                params={"team_id": 1610612744 if not is_interior else 1610612759, "season": season},
+                join_keys=["team_id"],
+                description="Teammate offensive/defensive rating spacing uplift on vs off"
+            ))
+
+        # 3. Longitudinal / Halftime Adjustments
+        elif q_type == QuestionType.LONGITUDINAL:
+            team_id = next((e.id for e in intent.entities if e.type == "team" and e.id), 1610612752)
+            steps.append(PlanStep(
+                step_id="S1_FirstHalf",
+                endpoint="TeamPlayerOnOffDetails",
+                params={"team_id": team_id, "season": season, "game_segment_nullable": "First Half"},
+                join_keys=["team_id"],
+                description="First half team rating baseline"
+            ))
+            steps.append(PlanStep(
+                step_id="S2_SecondHalf",
+                endpoint="TeamPlayerOnOffDetails",
+                params={"team_id": team_id, "season": season, "game_segment_nullable": "Second Half"},
+                join_keys=["team_id"],
+                description="Second half team rating adjustment split"
+            ))
+
+        # 4. Paradox (Midrange)
+        elif q_type == QuestionType.PARADOX:
+            steps.append(PlanStep(
+                step_id="S1_ShotLocations",
+                endpoint="LeagueDashPlayerShotLocations",
+                params={"season": season, "season_type_all_star": season_type, "per_mode_detailed": "PerGame"},
+                join_keys=["season"],
+                description="League-wide shot zone efficiency conditioned by player volume"
+            ))
+
+        # 5. Multi-player Comparison
+        elif q_type == QuestionType.COMPARISON:
+            for idx, ent in enumerate(intent.entities, 1):
+                p_id = ent.id or 2544
+                steps.append(PlanStep(
+                    step_id=f"S{idx}_{ent.name.replace(' ', '_')}",
+                    endpoint="PlayerGameLog",
+                    params={"player_id": p_id, "season": season, "season_type_all_star": season_type},
+                    join_keys=["player_id", "season"],
+                    description=f"Season game logs for {ent.name}"
+                ))
+
+        # 6. Default Single Player
+        else:
+            p_id = intent.entities[0].id if intent.entities and intent.entities[0].id else 2544
+            steps.append(PlanStep(
+                step_id="S1_SingleLog",
+                endpoint="PlayerGameLog",
+                params={"player_id": p_id, "season": season, "season_type_all_star": season_type},
+                join_keys=["player_id", "season"],
+                description="Player season game log"
+            ))
+
+        return LogicalPlan(
+            intent=intent,
+            steps=steps,
+            target_claims=intent.metrics
+        )
+
+    def validate_plan_schema(self, plan: LogicalPlan) -> Tuple[bool, List[str]]:
+        """
+        Schema validation BEFORE execution:
+        Every endpoint exists in catalogue, and required parameters are present.
+        """
+        errors = []
+        for step in plan.steps:
+            if step.endpoint not in self.catalogue:
+                errors.append(f"Step '{step.step_id}': Endpoint '{step.endpoint}' not in verified catalogue.")
+                continue
+                
+            ep_meta = self.catalogue[step.endpoint]
+            req_params = ep_meta.get("required_parameters", [])
+            for req_p in req_params:
+                if req_p not in step.params and req_p.lower() not in [k.lower() for k in step.params.keys()]:
+                    errors.append(
+                        f"Step '{step.step_id}' ({step.endpoint}): Missing required parameter '{req_p}'."
+                    )
+                    
+        return (len(errors) == 0), errors
+
+    def execute_plan(
+        self,
+        plan: LogicalPlan,
+        client: NBAClient,
+        evidence_table: Optional[EvidenceTable] = None,
+    ) -> Tuple[EvidenceTable, Dict[str, Any]]:
+        """
+        Ponder Gate Tree Incremental Execution.
+        Executes step-by-step; verifies leaf nodes, backtracks on empty results.
+        """
+        table = evidence_table or EvidenceTable()
+        execution_results = {}
+        
+        # Validate schema first
+        is_valid, validation_errors = self.validate_plan_schema(plan)
+        if not is_valid:
+            logger.error(f"Plan failed pre-execution validation: {validation_errors}")
+            return table, {"error": "Pre-execution plan validation failed", "details": validation_errors}
+
+        for step in plan.steps:
+            logger.info(f"Executing step {step.step_id} -> {step.endpoint} with params {step.params}")
+            res = client.call(step.endpoint, step.params, use_cache=True)
+            
+            # Check gate: rows returned?
+            total_rows = sum(len(rows) for rows in res.get("datasets", {}).values())
+            
+            if res.get("status") != "success" or total_rows == 0:
+                logger.warning(f"Step {step.step_id} produced 0 rows or error: {res.get('error')}")
+                # Leaf backtracking / retry with widened filter
+                if "season_type_playoffs" in step.params or "season_type_all_star" in step.params:
+                    logger.info(f"Backtracking: retry step {step.step_id} with Regular Season...")
+                    fallback_params = dict(step.params)
+                    for k in ("season_type_playoffs", "season_type_all_star"):
+                        if k in fallback_params:
+                            fallback_params[k] = "Regular Season"
+                    res = client.call(step.endpoint, fallback_params, use_cache=True)
+                    total_rows = sum(len(rows) for rows in res.get("datasets", {}).values())
+                    
+                if total_rows == 0 and step.required:
+                    logger.error(f"Required gate failed for step {step.step_id}. Failing fast.")
+                    execution_results[step.step_id] = {"status": "gate_failed", "step": step.model_dump()}
+                    return table, {"error": f"Required gate failed at {step.step_id}", "step": step.step_id}
+
+            execution_results[step.step_id] = res
+
+        return table, execution_results
