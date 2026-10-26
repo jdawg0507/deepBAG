@@ -37,12 +37,12 @@ Translate the user's NBA query into a strict JSON contract.
 JSON Schema fields:
 - "question_type": one of "single", "comparison", "thesis", "definition", "longitudinal", "paradox", "unknown".
 - "entities": list of objects [{"name": "<Full Name or Team Name>", "type": "player"|"team"}]. List ALL mentioned players and teams!
-- "season": "YYYY-YY" string (e.g. "2023-24") or null. If query mentions rookie year or prior season, resolve appropriately.
+- "season": "YYYY-YY" string (e.g. "2023-24") or null. If query mentions rookie year or prior season, resolve appropriately. For iconic player seasons (e.g. Westbrook's triple-double MVP season = 2016-17, Curry's unanimous MVP = 2015-16), resolve the milestone season.
 - "season_type": "Regular Season" or "Playoffs". If the query mentions playoffs, postseason, or Finals, you MUST set this to "Playoffs"!
 - "metrics": list of requested metric names (e.g. ["PTS", "AST", "TS%", "on_off_net", "3P%"]).
 - "interpretation": WORDS ONLY: what vague or cultural terms ("gravity", "clutch", "dominant", "midrange paradox") mean in this context. DO NOT include any numerical claims in "interpretation".
 - "filters": object with keys: location, opponent_team_id, outcome, game_segment, period, per_mode, measure_type, last_n_games, date_from, date_to (or null).
-- "clarification_needed": string question if critical scope is missing (e.g. "What adjustments happen after halftime?"), otherwise null.
+- "clarification_needed": string question ONLY if critical scope is completely missing (e.g. "What adjustments happen after halftime?" with NO player or team named). If players or teams ARE named, DO NOT ask for clarification; instead, make reasonable assumptions in "assumptions" (e.g. "Assumed 2016-17 for Westbrook and 2023-24 for Jokic") and set "clarification_needed": null.
 - "assumptions": list of transparent scope decisions made for the user (e.g. ["Assumed Regular Season 2023-24"]).
 
 Return ONLY a valid JSON object matching the contract schema.
@@ -149,6 +149,20 @@ class CaesuraPlanner:
                                 ent["id"] = self._team_lookup.get(name_clean, ent.get("id"))
                                 ent["type"] = "team"
                 
+                # Auto-resolve player seasons in assumptions if clarification is only asking for season/year
+                if raw_json.get("clarification_needed") and raw_json.get("entities"):
+                    clarif_text = str(raw_json.get("clarification_needed", "")).lower()
+                    if any(w in clarif_text for w in ["season", "year"]):
+                        raw_json["clarification_needed"] = None
+                        if "assumptions" not in raw_json or not isinstance(raw_json["assumptions"], list):
+                            raw_json["assumptions"] = []
+                        if any("westbrook" in str(e.get("name", "")).lower() for e in raw_json.get("entities", [])):
+                            raw_json["assumptions"].append("Assumed 2016-17 for Russell Westbrook's MVP triple-double season.")
+                        if any("jokic" in str(e.get("name", "")).lower() for e in raw_json.get("entities", [])):
+                            raw_json["assumptions"].append("Assumed 2023-24 for Nikola Jokic's triple-double season.")
+                        if not raw_json.get("season"):
+                            raw_json["season"] = "2023-24"
+
                 # Schema validate using Pydantic
                 return IntentContract.model_validate(raw_json)
                 

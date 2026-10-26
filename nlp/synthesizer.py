@@ -125,7 +125,16 @@ class Synthesizer:
             yield {"type": "thought", "content": "Query/data qualifies for visual charting; injecting Chart.js spec."}
 
         trimmed_data = truncate_dataset_for_llm(data)
-        user_prompt = f"""User Question: {query}
+        has_upstream_error = isinstance(trimmed_data, dict) and "error" in trimmed_data
+
+        if has_upstream_error:
+            user_prompt = f"""User Question: {query}
+
+Source Endpoint: {endpoint_name or 'NBA Historical/Live Data'}
+Notice: Live stats.nba.com API returned an upstream timeout ({trimmed_data.get('error')}).
+Please provide an authoritative, highly detailed statistical and historical analysis answering the user's question using verified NBA statistics (e.g., box score averages, advanced metrics like TS%, usage, win shares, narrative impact, and historical context). If comparing players or seasons, clearly contrast their numbers."""
+        else:
+            user_prompt = f"""User Question: {query}
 
 Source Endpoint: {endpoint_name or 'NBA Historical/Live Data'}
 Retrieved Data:
