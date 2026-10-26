@@ -43,12 +43,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-API_KEY = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+API_KEY = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY") or os.environ.get("NEBIUS_API_KEY")
+ACTIVE_PORT = int(os.environ.get("PORT", "8000"))
 
 print("Initializing NBA Query Analyzer in FastAPI app...")
 try:
     if not API_KEY:
-        print("Notice: Neither GEMINI_API_KEY nor GOOGLE_API_KEY environment variable is set. Running in offline mode.")
+        print("Notice: No LLM API key environment variable is set. Running in offline mode.")
         analyzer = None
     else:
         analyzer = NBAQueryAnalyzer(api_key=API_KEY)

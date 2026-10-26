@@ -318,11 +318,18 @@ class NBAQueryAnalyzer:
 
             
     def _setup_model(self, api_key):
-        """Initialize the Gemini model with the provided API key"""
+        """Initialize the Gemini model with the provided API key or fallback"""
         import os
-        genai.configure(api_key=api_key)
-        model_name = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite")
-        self.model = genai.GenerativeModel(model_name)
+        try:
+            if api_key and not api_key.startswith("v1."):
+                genai.configure(api_key=api_key)
+                model_name = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite")
+                self.model = genai.GenerativeModel(model_name)
+            else:
+                self.model = None
+        except Exception as e:
+            print(f"Warning: Gemini model setup fallback: {e}")
+            self.model = None
 
 
 

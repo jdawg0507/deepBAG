@@ -49,7 +49,8 @@ class UnifiedLLMClient:
                 
             from openai import OpenAI
             base_url = os.environ.get("NEBIUS_BASE_URL", "https://api.tokenfactory.nebius.com/v1/")
-            self.model = self.model or os.environ.get("NEBIUS_LLM_MODEL", "nvidia/Nemotron-3-Super-120B-A12B")
+            if not self.model or "gemini" in self.model.lower():
+                self.model = os.environ.get("NEBIUS_LLM_MODEL", "nvidia/nemotron-3-super-120b-a12b")
             self.client = OpenAI(base_url=base_url, api_key=self.nebius_key)
             logger.info(f"Initialized Nebius LLM client with model {self.model}")
             
@@ -57,7 +58,8 @@ class UnifiedLLMClient:
             import google.generativeai as genai
             if self.gemini_key:
                 genai.configure(api_key=self.gemini_key, transport="rest")
-            self.model = self.model or os.environ.get("GEMINI_MODEL", "gemini-3.5-flash-lite")
+            if not self.model or "nemotron" in self.model.lower():
+                self.model = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash-lite")
             self.client = genai.GenerativeModel(self.model)
             logger.info(f"Initialized Gemini LLM client with model {self.model}")
         else:
@@ -71,6 +73,10 @@ class UnifiedLLMClient:
         model_name: Optional[str] = None,
     ) -> str:
         target_model = model_name or self.model
+        if self.provider == "nebius" and ("gemini" in target_model.lower()):
+            target_model = os.environ.get("NEBIUS_LLM_MODEL", "nvidia/nemotron-3-super-120b-a12b")
+        elif self.provider == "gemini" and ("nemotron" in target_model.lower() or "nvidia" in target_model.lower()):
+            target_model = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash-lite")
         with TelemetryManager.start_span("deepbag.llm_generate", {
             "provider": self.provider,
             "model": target_model,
