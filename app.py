@@ -2,12 +2,14 @@ import os
 import sys
 import json
 import logging
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from dotenv import load_dotenv
+
+# Load .env file automatically
+load_dotenv()
 
 # Add directory to sys.path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 
 from nba_nlp_analyzer_modular import NBAQueryAnalyzer
 from core.schemas import ChatRequest, ChatResponse

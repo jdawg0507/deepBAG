@@ -96,6 +96,8 @@ class NBAQueryAnalyzer:
         model_name = os.environ.get("GEMINI_MODEL", "gemini-1.5-flash")
         self.model = genai.GenerativeModel(model_name)
 
+
+
     
     
 

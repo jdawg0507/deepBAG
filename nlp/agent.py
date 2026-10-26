@@ -7,7 +7,9 @@ class NBAAgent:
     def __init__(self, model_name=None):
         import os
         self.model_name = model_name or os.environ.get("GEMINI_MODEL", "gemini-1.5-flash")
-        self.fallback_models = ["gemini-1.5-flash-8b", "gemini-1.5-pro", "gemini-2.0-flash"]
+        self.fallback_models = ["gemini-2.0-flash", "gemini-1.5-pro", "gemini-1.5-flash-8b"]
+
+
 
 
     def summarize_result(self, result_dict, max_rows=3):
