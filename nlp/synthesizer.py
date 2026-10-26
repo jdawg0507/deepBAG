@@ -94,14 +94,14 @@ class Synthesizer:
     def __init__(self, default_model: Optional[str] = None):
         from dotenv import load_dotenv
         load_dotenv()
-        self.default_model = default_model or os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite")
+        self.default_model = default_model or os.environ.get("GEMINI_MODEL", "gemini-3.5-flash-lite")
         api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
         if api_key:
             genai.configure(api_key=api_key, transport="rest")
         self.fallback_models = [
+            "gemini-3.5-flash-lite",
+            "gemini-flash-lite-latest",
             "gemini-3.1-flash-lite",
-            "gemini-3.8-flash",
-            "gemini-flash-latest",
         ]
 
     def synthesize(
