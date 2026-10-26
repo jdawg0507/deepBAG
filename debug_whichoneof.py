@@ -3,7 +3,11 @@ from google.protobuf.struct_pb2 import Struct
 from google.protobuf import json_format
 import os
 
-genai.configure(api_key=os.environ.get('GEMINI_API_KEY', 'AIzaSyDGvmWXOZRTyqWl_MhcYEAU2jvKV5mS8vA'))
+api_key = os.environ.get('GEMINI_API_KEY') or os.environ.get('GOOGLE_API_KEY')
+if not api_key:
+    raise RuntimeError("GEMINI_API_KEY environment variable is required.")
+genai.configure(api_key=api_key)
+
 model = genai.GenerativeModel('gemini-2.5-flash')
 chat = model.start_chat()
 

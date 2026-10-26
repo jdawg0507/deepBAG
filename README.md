@@ -133,12 +133,13 @@ Setup
 
     python precompute_embeddings.py
 
-    Launch the API:
+    Launch the API Gateway:
     Bash
 
-    uvicorn src.app:app --host 0.0.0.0 --port 8000 --reload
+    uvicorn app:app --host 0.0.0.0 --port 8000 --reload
 
-    Run the integration suite:
+    Run the automated test & DeepEval benchmark suite:
     Bash
 
-    pytest test_agentic_pipeline.py test_endpoints.py
+    pytest tests/ -v
+

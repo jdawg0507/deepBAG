@@ -7,11 +7,13 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from nba_nlp_analyzer_modular import NBAQueryAnalyzer
 
 def test_agentic_pipeline():
-    # We assume the user has a GEMINI_API_KEY environment variable
-    # Or replace with the hardcoded API key if needed (the user had AIzaSyDGvmWXOZRTyqWl_MhcYEAU2jvKV5mS8vA in nba_nlp_analyzer.py)
-    api_key = os.environ.get("GEMINI_API_KEY", "AIzaSyDGvmWXOZRTyqWl_MhcYEAU2jvKV5mS8vA")
+    api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+    if not api_key:
+        print("Notice: GEMINI_API_KEY is not set. Please export GEMINI_API_KEY='your-key' to run live queries.")
+        return
     
     analyzer = NBAQueryAnalyzer(api_key=api_key)
+
     
     # 1. Simple lookup
     query1 = "What are LeBron James' stats from his last game?"

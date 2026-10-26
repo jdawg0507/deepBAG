@@ -556,7 +556,12 @@ class NBAQueryAnalyzer:
 
 # Example usage
 if __name__ == "__main__":
-    analyzer = NBAQueryAnalyzer(api_key="AIzaSyDGvmWXOZRTyqWl_MhcYEAU2jvKV5mS8vA")
+    import os
+    api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+    if not api_key:
+        print("Please export GEMINI_API_KEY='your-key' to run the analyzer.")
+        sys.exit(1)
+    analyzer = NBAQueryAnalyzer(api_key=api_key)
     result = analyzer.process_query("what was lebrons statline averages the past 5 games?")
     print("\n=== Analysis Result ===")
     print(json.dumps(result, indent=2) if isinstance(result, dict) else result)

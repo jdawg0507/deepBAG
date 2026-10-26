@@ -7,14 +7,18 @@ import json
 from nba_nlp_analyzer_modular import NBAQueryAnalyzer
 
 def main():
-    # Your API key - in a production environment, this should be loaded from environment variables
-    # or a secure configuration file, not hardcoded
-    api_key = "AIzaSyAHrY15BOlnq6d5fEMEOoYauwrQGOUJfX8"
+    import os
+    api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+    if not api_key:
+        print("Error: GEMINI_API_KEY environment variable is not set.")
+        print("Please export it in your shell: export GEMINI_API_KEY='your-key'")
+        sys.exit(1)
     
     # Initialize the analyzer
     print("Initializing NBA Query Analyzer...")
     analyzer = NBAQueryAnalyzer(api_key=api_key)
     print("Initialization complete!")
+
     
     # Main interaction loop
     while True:

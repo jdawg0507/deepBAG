@@ -1,0 +1,39 @@
+name: deepBAG Enterprise CI Gate & Drift Prevention
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-and-eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Unit & Contract Tests
+        run: |
+          pytest tests/test_cache.py tests/test_rate_limiter.py tests/test_schemas.py tests/test_telemetry.py -v
+
+      - name: Run DeepEval 50-Query Benchmark CI Gate
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+          LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+        run: |
+          pytest tests/evals/test_deepbag_evals.py -s -v

@@ -1,0 +1,525 @@
+[
+  {
+    "id": "query_01",
+    "query": "What were LeBron James' points and assists in his most recent game?",
+    "category": "single_player_recent",
+    "expected_tool": "call_nba_api",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_params": {
+      "player_id": 2544,
+      "season_type_all_star": "Regular Season"
+    }
+  },
+  {
+    "id": "query_02",
+    "query": "How many 3-pointers did Stephen Curry make in 2023-24?",
+    "category": "single_player_season",
+    "expected_tool": "call_nba_api",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_params": {
+      "player_id": 201939,
+      "season": "2023-24"
+    }
+  },
+  {
+    "id": "query_03",
+    "query": "Give me the biographical info and draft position for Nikola Jokic.",
+    "category": "bio_info",
+    "expected_tool": "call_nba_api",
+    "expected_endpoint": "CommonPlayerInfo",
+    "expected_params": {
+      "player_id": 203999
+    }
+  },
+  {
+    "id": "query_04",
+    "query": "Who had more points over their last 5 games, Luka Doncic or Shai Gilgeous-Alexander?",
+    "category": "multi_player_comparison",
+    "expected_tool": "call_nba_api",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_params": {
+      "player_id": 1629029
+    }
+  },
+  {
+    "id": "query_05",
+    "query": "Show me the advanced stats leaders across the league in 2023-24.",
+    "category": "league_advanced_stats",
+    "expected_tool": "call_nba_api",
+    "expected_endpoint": "LeagueDashPlayerStats",
+    "expected_params": {
+      "season": "2023-24",
+      "measure_type_detailed_defense": "Advanced"
+    }
+  },
+  {
+    "id": "query_06",
+    "query": "What was the box score of Wilt Chamberlain's 100 point game on March 2, 1962?",
+    "category": "historical_archive",
+    "expected_tool": "query_historical_database",
+    "expected_endpoint": "historical_sql",
+    "expected_params": {
+      "player_name": "Wilt Chamberlain"
+    }
+  },
+  {
+    "id": "query_07",
+    "query": "What are Kevin Durant's playoff stats from the 2017 NBA Finals?",
+    "category": "playoffs_historical",
+    "expected_tool": "query_historical_database",
+    "expected_endpoint": "historical_sql",
+    "expected_params": {
+      "player_name": "Kevin Durant",
+      "game_type": "Playoffs"
+    }
+  },
+  {
+    "id": "query_08",
+    "query": "Find the defensive rating leaders in the 2023-24 regular season.",
+    "category": "defensive_ratings",
+    "expected_tool": "call_nba_api",
+    "expected_endpoint": "LeagueDashPlayerStats",
+    "expected_params": {
+      "season": "2023-24",
+      "measure_type_detailed_defense": "Defense"
+    }
+  },
+  {
+    "id": "query_09",
+    "query": "Giannis Antetokounmpo box score vs Celtics on Christmas 2023",
+    "category": "date_specific",
+    "expected_tool": "call_nba_api",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_params": {
+      "player_id": 203507,
+      "season": "2023-24"
+    }
+  },
+  {
+    "id": "query_10",
+    "query": "Which NBA API endpoints allow fetching player shot tracking data?",
+    "category": "doc_discovery",
+    "expected_tool": "search_api_docs",
+    "expected_endpoint": "documentation",
+    "expected_params": {
+      "keywords": "shot tracking"
+    }
+  },
+  {
+    "id": "query_11",
+    "query": "Jayson Tatum stats against the Miami Heat in the 2022 Eastern Conference Finals",
+    "category": "playoff_matchup",
+    "expected_tool": "query_historical_database",
+    "expected_endpoint": "historical_sql",
+    "expected_params": {
+      "player_name": "Jayson Tatum",
+      "game_type": "Playoffs"
+    }
+  },
+  {
+    "id": "query_12",
+    "query": "What is Anthony Edwards' career high in scoring in a regular season game?",
+    "category": "career_high",
+    "expected_tool": "call_nba_api",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_params": {
+      "player_id": 1630162
+    }
+  },
+  {
+    "id": "query_13",
+    "query": "How many triple-doubles did Domantas Sabonis record in 2023-24?",
+    "category": "milestone_stat",
+    "expected_tool": "call_nba_api",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_params": {
+      "player_id": 1627734,
+      "season": "2023-24"
+    }
+  },
+  {
+    "id": "query_14",
+    "query": "Search for documentation on how to get hustle stats for players.",
+    "category": "doc_discovery",
+    "expected_tool": "search_api_docs",
+    "expected_endpoint": "documentation",
+    "expected_params": {
+      "keywords": "hustle stats"
+    }
+  },
+  {
+    "id": "query_15",
+    "query": "Michael Jordan game logs during the 1995-96 regular season.",
+    "category": "historical_season",
+    "expected_tool": "query_historical_database",
+    "expected_endpoint": "historical_sql",
+    "expected_params": {
+      "player_name": "Michael Jordan"
+    }
+  },
+  {
+    "id": "query_16",
+    "query": "Victor Wembanyama blocks per game in his rookie season (2023-24).",
+    "category": "rookie_season",
+    "expected_tool": "call_nba_api",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_params": {
+      "player_id": 1641705,
+      "season": "2023-24"
+    }
+  },
+  {
+    "id": "query_17",
+    "query": "Compare Rudy Gobert and Bam Adebayo defensive rebound percentage.",
+    "category": "advanced_defense_comparison",
+    "expected_tool": "call_nba_api",
+    "expected_endpoint": "LeagueDashPlayerStats",
+    "expected_params": {
+      "measure_type_detailed_defense": "Defense"
+    }
+  },
+  {
+    "id": "query_18",
+    "query": "Did Kobe Bryant score 81 points against the Raptors in 2006?",
+    "category": "historical_iconic",
+    "expected_tool": "query_historical_database",
+    "expected_endpoint": "historical_sql",
+    "expected_params": {
+      "player_name": "Kobe Bryant"
+    }
+  },
+  {
+    "id": "query_19",
+    "query": "What endpoint gives player clutch shooting splits?",
+    "category": "doc_discovery",
+    "expected_tool": "search_api_docs",
+    "expected_endpoint": "documentation",
+    "expected_params": {
+      "keywords": "clutch shooting"
+    }
+  },
+  {
+    "id": "query_20",
+    "query": "Trae Young total assists in 2023-24 season.",
+    "category": "single_player_totals",
+    "expected_tool": "call_nba_api",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_params": {
+      "player_id": 1629027,
+      "season": "2023-24"
+    }
+  },
+  {
+    "id": "query_21",
+    "query": "Devin Booker 70 point game against Boston Celtics in 2017 box score",
+    "category": "historical_game",
+    "expected_tool": "query_historical_database",
+    "expected_endpoint": "historical_sql",
+    "expected_params": {
+      "player_name": "Devin Booker"
+    }
+  },
+  {
+    "id": "query_22",
+    "query": "Kawhi Leonard true shooting percentage in 2023-24",
+    "category": "advanced_metric",
+    "expected_tool": "call_nba_api",
+    "expected_endpoint": "LeagueDashPlayerStats",
+    "expected_params": {
+      "season": "2023-24",
+      "measure_type_detailed_defense": "Advanced"
+    }
+  },
+  {
+    "id": "query_23",
+    "query": "Check endpoint for team estimated metrics and net rating.",
+    "category": "doc_discovery",
+    "expected_tool": "search_api_docs",
+    "expected_endpoint": "documentation",
+    "expected_params": {
+      "keywords": "team estimated metrics net rating"
+    }
+  },
+  {
+    "id": "query_24",
+    "query": "Chet Holmgren games with 4 or more blocks in 2023-24",
+    "category": "stat_filter",
+    "expected_tool": "call_nba_api",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_params": {
+      "player_id": 1631096,
+      "season": "2023-24"
+    }
+  },
+  {
+    "id": "query_25",
+    "query": "How many games did Bill Russell grab 30 or more rebounds in his playoff career?",
+    "category": "historical_playoffs",
+    "expected_tool": "query_historical_database",
+    "expected_endpoint": "historical_sql",
+    "expected_params": {
+      "player_name": "Bill Russell",
+      "game_type": "Playoffs"
+    }
+  },
+  {
+    "id": "query_26",
+    "query": "Tyrese Haliburton assist-to-turnover ratio in 2023-24",
+    "category": "advanced_ratio",
+    "expected_tool": "call_nba_api",
+    "expected_endpoint": "LeagueDashPlayerStats",
+    "expected_params": {
+      "season": "2023-24",
+      "measure_type_detailed_defense": "Advanced"
+    }
+  },
+  {
+    "id": "query_27",
+    "query": "Jimmy Butler playoff scoring average in the 2020 Bubble Finals",
+    "category": "historical_playoffs",
+    "expected_tool": "query_historical_database",
+    "expected_endpoint": "historical_sql",
+    "expected_params": {
+      "player_name": "Jimmy Butler",
+      "game_type": "Playoffs"
+    }
+  },
+  {
+    "id": "query_28",
+    "query": "What endpoint retrieves player matchup tracking data against specific defenders?",
+    "category": "doc_discovery",
+    "expected_tool": "search_api_docs",
+    "expected_endpoint": "documentation",
+    "expected_params": {
+      "keywords": "matchup tracking defender"
+    }
+  },
+  {
+    "id": "query_29",
+    "query": "Kyrie Irving shooting percentages (FG%, 3P%, FT%) in 2023-24",
+    "category": "shooting_splits",
+    "expected_tool": "call_nba_api",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_params": {
+      "player_id": 202681,
+      "season": "2023-24"
+    }
+  },
+  {
+    "id": "query_30",
+    "query": "Shaquille O'Neal free throw shooting percentage in 2000 NBA Finals",
+    "category": "historical_finals",
+    "expected_tool": "query_historical_database",
+    "expected_endpoint": "historical_sql",
+    "expected_params": {
+      "player_name": "Shaquille O'Neal"
+    }
+  },
+  {
+    "id": "query_31",
+    "query": "Paolo Banchero points per game jump between Year 1 and Year 2",
+    "category": "year_over_year",
+    "expected_tool": "call_nba_api",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_params": {
+      "player_id": 1631094
+    }
+  },
+  {
+    "id": "query_32",
+    "query": "Look up the API endpoint for synergy play types like pick and roll ball handler.",
+    "category": "doc_discovery",
+    "expected_tool": "search_api_docs",
+    "expected_endpoint": "documentation",
+    "expected_params": {
+      "keywords": "synergy play types pick and roll"
+    }
+  },
+  {
+    "id": "query_33",
+    "query": "Damian Lillard 71-point game against the Rockets in February 2023 box score",
+    "category": "historical_game",
+    "expected_tool": "query_historical_database",
+    "expected_endpoint": "historical_sql",
+    "expected_params": {
+      "player_name": "Damian Lillard"
+    }
+  },
+  {
+    "id": "query_34",
+    "query": "Jalen Brunson usage rate during 2023-24 regular season",
+    "category": "usage_rate",
+    "expected_tool": "call_nba_api",
+    "expected_endpoint": "LeagueDashPlayerStats",
+    "expected_params": {
+      "season": "2023-24",
+      "measure_type_detailed_defense": "Usage"
+    }
+  },
+  {
+    "id": "query_35",
+    "query": "Find the endpoint for defensive impact and rim protection field goal percentage.",
+    "category": "doc_discovery",
+    "expected_tool": "search_api_docs",
+    "expected_endpoint": "documentation",
+    "expected_params": {
+      "keywords": "defensive impact rim protection"
+    }
+  },
+  {
+    "id": "query_36",
+    "query": "Dirk Nowitzki free throw streak in the 2011 Western Conference Finals",
+    "category": "historical_playoffs",
+    "expected_tool": "query_historical_database",
+    "expected_endpoint": "historical_sql",
+    "expected_params": {
+      "player_name": "Dirk Nowitzki",
+      "game_type": "Playoffs"
+    }
+  },
+  {
+    "id": "query_37",
+    "query": "Donovan Mitchell games with 40+ points in 2023-24",
+    "category": "scoring_games",
+    "expected_tool": "call_nba_api",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_params": {
+      "player_id": 1628378,
+      "season": "2023-24"
+    }
+  },
+  {
+    "id": "query_38",
+    "query": "Find API endpoints providing player speed and distance tracking statistics.",
+    "category": "doc_discovery",
+    "expected_tool": "search_api_docs",
+    "expected_endpoint": "documentation",
+    "expected_params": {
+      "keywords": "speed distance tracking"
+    }
+  },
+  {
+    "id": "query_39",
+    "query": "Allen Iverson minutes per game in 2001 regular season",
+    "category": "historical_minutes",
+    "expected_tool": "query_historical_database",
+    "expected_endpoint": "historical_sql",
+    "expected_params": {
+      "player_name": "Allen Iverson"
+    }
+  },
+  {
+    "id": "query_40",
+    "query": "Anthony Davis offensive and defensive rebound totals in 2023-24",
+    "category": "rebounding_totals",
+    "expected_tool": "call_nba_api",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_params": {
+      "player_id": 203076,
+      "season": "2023-24"
+    }
+  },
+  {
+    "id": "query_41",
+    "query": "Magic Johnson triple double count in 1987 playoffs",
+    "category": "historical_playoffs",
+    "expected_tool": "query_historical_database",
+    "expected_endpoint": "historical_sql",
+    "expected_params": {
+      "player_name": "Magic Johnson",
+      "game_type": "Playoffs"
+    }
+  },
+  {
+    "id": "query_42",
+    "query": "Search for documentation on how to query referee statistics and foul rates.",
+    "category": "doc_discovery",
+    "expected_tool": "search_api_docs",
+    "expected_endpoint": "documentation",
+    "expected_params": {
+      "keywords": "referee foul rates"
+    }
+  },
+  {
+    "id": "query_43",
+    "query": "De'Aaron Fox points per 48 minutes in 2023-24",
+    "category": "per_mode_stat",
+    "expected_tool": "call_nba_api",
+    "expected_endpoint": "LeagueDashPlayerStats",
+    "expected_params": {
+      "season": "2023-24",
+      "per_mode_detailed": "Per48"
+    }
+  },
+  {
+    "id": "query_44",
+    "query": "Larry Bird 3-point contest results and 1986 season shooting splits",
+    "category": "historical_shooting",
+    "expected_tool": "query_historical_database",
+    "expected_endpoint": "historical_sql",
+    "expected_params": {
+      "player_name": "Larry Bird"
+    }
+  },
+  {
+    "id": "query_45",
+    "query": "Zion Williamson field goal percentage within 5 feet in 2023-24",
+    "category": "shot_distance",
+    "expected_tool": "call_nba_api",
+    "expected_endpoint": "LeagueDashPlayerStats",
+    "expected_params": {
+      "season": "2023-24"
+    }
+  },
+  {
+    "id": "query_46",
+    "query": "What endpoint returns team win-loss streaks and home-away splits?",
+    "category": "doc_discovery",
+    "expected_tool": "search_api_docs",
+    "expected_endpoint": "documentation",
+    "expected_params": {
+      "keywords": "team standings streaks home away splits"
+    }
+  },
+  {
+    "id": "query_47",
+    "query": "Hakeem Olajuwon quad-double on March 29, 1990 full box score",
+    "category": "historical_boxscore",
+    "expected_tool": "query_historical_database",
+    "expected_endpoint": "historical_sql",
+    "expected_params": {
+      "player_name": "Hakeem Olajuwon"
+    }
+  },
+  {
+    "id": "query_48",
+    "query": "Austin Reaves free throw percentage during 4th quarters in 2023-24",
+    "category": "clutch_splits",
+    "expected_tool": "call_nba_api",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_params": {
+      "player_id": 1630559,
+      "season": "2023-24"
+    }
+  },
+  {
+    "id": "query_49",
+    "query": "Search documentation for draft combine anthropometric measurements and agility drills.",
+    "category": "doc_discovery",
+    "expected_tool": "search_api_docs",
+    "expected_endpoint": "documentation",
+    "expected_params": {
+      "keywords": "draft combine measurements agility"
+    }
+  },
+  {
+    "id": "query_50",
+    "query": "Derrick Rose 50 point game on Halloween 2018 with Minnesota Timberwolves box score",
+    "category": "historical_game",
+    "expected_tool": "query_historical_database",
+    "expected_endpoint": "historical_sql",
+    "expected_params": {
+      "player_name": "Derrick Rose"
+    }
+  }
+]

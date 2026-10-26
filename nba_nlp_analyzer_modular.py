@@ -15,8 +15,8 @@ from nlp.response_formatter import ResponseFormatter
 from nlp.tool_retriever import EndpointToolRetriever
 from nlp.tool_builder import EndpointToolBuilder
 from nlp.agent import NBAAgent
-
-from query_cache import QueryCache
+from core.cache import RedisQueryCache
+from core.telemetry import TelemetryManager
 
 class NBAQueryAnalyzer:
     def __init__(self, api_key):
@@ -45,7 +45,7 @@ class NBAQueryAnalyzer:
         self.tool_retriever = EndpointToolRetriever(self.endpoint_library)
         self.tool_builder = EndpointToolBuilder(self.endpoint_library)
         self.agent = NBAAgent()
-        self.cache = QueryCache()
+        self.cache = RedisQueryCache()
     
     def process_query_agentic(self, query):
         """Process an NBA stats query using the new Gemini Function Calling Agent"""
@@ -54,35 +54,40 @@ class NBAQueryAnalyzer:
         from nlp.meta_tools import get_meta_tools_declarations
         from nlp.sql_tool import get_sql_tool_declaration
         
-        # 1. Check Cache first
-        cached_response = self.cache.get(query)
-        if cached_response:
-            print("Found response in cache!")
-            yield {"type": "thought", "content": "Found exact match in local query cache. Skipping API calls..."}
-            yield {"type": "final_answer", "content": cached_response}
-            return
+        # 1. Distributed Cache Lookup with Telemetry
+        with TelemetryManager.start_span("deepbag.cache_lookup", {"query": query}) as cache_span:
+            cached_response = self.cache.get(query)
+            if cached_response:
+                print("Found response in distributed cache!")
+                TelemetryManager.record_cache_event(hit=True, query=query)
+                yield {"type": "thought", "content": "Found exact match in distributed cache. Skipping API calls..."}
+                yield {"type": "final_answer", "content": cached_response}
+                return
+            TelemetryManager.record_cache_event(hit=False, query=query)
             
         try:
-            # 2. Build the static list of tools (Meta-Tools + SQL Tool)
-            tools = get_meta_tools_declarations()
-            tools.append(get_sql_tool_declaration())
+            with TelemetryManager.start_span("deepbag.agentic_route_resolution", {"query": query}) as route_span:
+                # 2. Build the static list of tools (Meta-Tools + SQL Tool)
+                tools = get_meta_tools_declarations()
+                tools.append(get_sql_tool_declaration())
+                    
+                # 3. Run the Agentic Loop (Streaming)
+                final_text = ""
+                for event in self.agent.run_stream(query, tools, self.endpoint_library):
+                    yield event
+                    if event.get("type") == "final_answer":
+                        final_text = event.get("content", "")
                 
-            # 3. Run the Agentic Loop (Streaming)
-            final_text = ""
-            for event in self.agent.run_stream(query, tools, self.endpoint_library):
-                yield event
-                if event.get("type") == "final_answer":
-                    final_text = event.get("content", "")
-            
-            # Save final response to cache if valid
-            if final_text and not final_text.startswith("Error"):
-                self.cache.set(query, final_text)
+                # Save final response to cache if valid
+                if final_text and not final_text.startswith("Error"):
+                    self.cache.set(query, final_text)
             
         except Exception as e:
             print(f"Error in agentic processing: {str(e)}")
             import traceback
             traceback.print_exc()
             yield {"type": "final_answer", "content": f"Error: {str(e)}"}
+
             
     def _setup_model(self, api_key):
         """Initialize the Gemini model with the provided API key"""
