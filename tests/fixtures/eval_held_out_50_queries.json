@@ -1,0 +1,410 @@
+[
+  {
+    "id": 51,
+    "tier": 1,
+    "query": "How did Ant do last night?",
+    "entities": ["Anthony Edwards"],
+    "needs_date_resolution": true,
+    "needs_disambiguation": true,
+    "expected_tool": "call_nba_api",
+    "expected_endpoint": "PlayerGameLog",
+    "description": "resolve date + disambiguate entity, or ask"
+  },
+  {
+    "id": 52,
+    "tier": 1,
+    "query": "Jokić's assists this season",
+    "entities": ["Nikola Jokic"],
+    "needs_accent_handling": true,
+    "needs_dynamic_season": true,
+    "expected_tool": "call_nba_api",
+    "expected_endpoint": "PlayerGameLog",
+    "description": "single player, current season, assists"
+  },
+  {
+    "id": 53,
+    "tier": 1,
+    "query": "What did the Joker average against Boston?",
+    "entities": ["Nikola Jokic"],
+    "opponent": "Boston Celtics",
+    "expected_tool": "call_nba_api",
+    "expected_filter": "opponent_team_id",
+    "description": "single player, opponent filter, season to resolve"
+  },
+  {
+    "id": 54,
+    "tier": 1,
+    "query": "Show me Wemby's rookie year blocks, but per game not totals",
+    "entities": ["Victor Wembanyama"],
+    "expected_season": "2023-24",
+    "expected_per_mode": "PerGame",
+    "expected_tool": "call_nba_api",
+    "description": "single player, rookie season, PerGame (not Totals)"
+  },
+  {
+    "id": 55,
+    "tier": 1,
+    "query": "SGA's free throws in clutch time last year",
+    "entities": ["Shai Gilgeous-Alexander"],
+    "needs_clutch_split": true,
+    "expected_season": "2022-23",
+    "expected_tool": "call_nba_api",
+    "description": "single player, clutch split, prior season, clutch definition"
+  },
+  {
+    "id": 56,
+    "tier": 1,
+    "query": "How many points did James score in his first game as a Laker?",
+    "entities": ["LeBron James"],
+    "team": "Los Angeles Lakers",
+    "needs_first_game_filter": true,
+    "expected_tool": "call_nba_api",
+    "description": "disambiguate to LeBron, first game as Laker, game log ordered"
+  },
+  {
+    "id": 57,
+    "tier": 1,
+    "query": "Give me Luka's stats since the trade",
+    "entities": ["Luka Doncic"],
+    "needs_date_range": true,
+    "expected_tool": "call_nba_api",
+    "description": "single player, date range from trade date"
+  },
+  {
+    "id": 58,
+    "tier": 1,
+    "query": "Book's shooting splits when KD was out",
+    "entities": ["Devin Booker", "Kevin Durant"],
+    "needs_teammate_filter": true,
+    "expected_tool": "call_nba_api",
+    "description": "single player, games filtered by teammate absence, shooting splits"
+  },
+  {
+    "id": 59,
+    "tier": 1,
+    "query": "What was Steph's 3P% in games he played 30+ minutes?",
+    "entities": ["Stephen Curry"],
+    "needs_minutes_filter": true,
+    "expected_tool": "call_nba_api",
+    "description": "single player, game log filtered by minutes, 3P% computed"
+  },
+  {
+    "id": 60,
+    "tier": 1,
+    "query": "Compare Tatum's regular season and playoff numbers, same year, no year given",
+    "entities": ["Jayson Tatum"],
+    "needs_multi_season_type": true,
+    "expected_tool": "call_nba_api",
+    "description": "plan list, same season, Regular Season + Playoffs, then difference"
+  },
+  {
+    "id": 61,
+    "tier": 2,
+    "query": "Who had the better true shooting, Giannis or Embiid, in 2023-24, and by how much?",
+    "entities": ["Giannis Antetokounmpo", "Joel Embiid"],
+    "is_comparison": true,
+    "metric": "TS%",
+    "expected_season": "2023-24",
+    "description": "plan list, both players, Advanced, difference computed in code"
+  },
+  {
+    "id": 62,
+    "tier": 2,
+    "query": "Rank Curry, Klay, and Dame by 3P% in 2022-23",
+    "entities": ["Stephen Curry", "Klay Thompson", "Damian Lillard"],
+    "is_ranking": true,
+    "expected_season": "2022-23",
+    "description": "plan list, three players, same season/metric, ranked output"
+  },
+  {
+    "id": 63,
+    "tier": 2,
+    "query": "Did the Celtics or the Nuggets have a better net rating at home last season?",
+    "entities": ["Boston Celtics", "Denver Nuggets"],
+    "is_comparison": true,
+    "location": "Home",
+    "description": "plan list, two teams, Home, prior season, net rating comparison"
+  },
+  {
+    "id": 64,
+    "tier": 2,
+    "query": "LeBron vs Jordan, career playoff PPG, but only Finals games",
+    "entities": ["LeBron James", "Michael Jordan"],
+    "is_comparison": true,
+    "season_type": "Playoffs",
+    "filter": "Finals",
+    "description": "plan list, both players, Playoffs + Finals filter, career aggregates"
+  },
+  {
+    "id": 65,
+    "tier": 2,
+    "query": "Which of Brunson, Haliburton, and Trae had the most assists per game against top-5 defenses?",
+    "entities": ["Jalen Brunson", "Tyrese Haliburton", "Trae Young"],
+    "is_ranking": true,
+    "filter": "top-5 defenses",
+    "description": "plan list, three players, opponent-defense filter, assists ranked"
+  },
+  {
+    "id": 66,
+    "tier": 2,
+    "query": "Show me Gobert's defensive rating with and without Ant on the floor",
+    "entities": ["Rudy Gobert", "Anthony Edwards"],
+    "is_on_off": true,
+    "description": "on/off details, same team, Gobert x Ant on-court vs off-court"
+  },
+  {
+    "id": 67,
+    "tier": 2,
+    "query": "Compare Wemby and Chet as rookies, blocks and 3P% together",
+    "entities": ["Victor Wembanyama", "Chet Holmgren"],
+    "is_comparison": true,
+    "description": "plan list, both players, rookie season, blocks + 3P%"
+  },
+  {
+    "id": 68,
+    "tier": 2,
+    "query": "Who scored more in the fourth quarter, Booker or Mitchell, in their head-to-head games?",
+    "entities": ["Devin Booker", "Donovan Mitchell"],
+    "is_comparison": true,
+    "filter": "4th quarter, head-to-head",
+    "description": "plan list, both players, head-to-head games, Period 4, points compared"
+  },
+  {
+    "id": 69,
+    "tier": 2,
+    "query": "Team stats for the Knicks in the playoffs, split by series opponent",
+    "entities": ["New York Knicks"],
+    "season_type": "Playoffs",
+    "group_by": "opponent",
+    "description": "team, Playoffs, grouped by opponent/series"
+  },
+  {
+    "id": 70,
+    "tier": 2,
+    "query": "What do Jokic, Embiid, and Giannis average in games against each other?",
+    "entities": ["Nikola Jokic", "Joel Embiid", "Giannis Antetokounmpo"],
+    "is_comparison": true,
+    "filter": "mutual matchups",
+    "description": "plan list, three players, mutual-matchup game set, averages"
+  },
+  {
+    "id": 71,
+    "tier": 3,
+    "query": "Is Curry's gravity actually showing up in his teammates' open 3P%?",
+    "type": "research_gravity",
+    "description": "GravityLeaders + on/off + shot-quality evidence, cross-checked"
+  },
+  {
+    "id": 72,
+    "tier": 3,
+    "query": "How much does Wemby change opponents' rim attempts when he's on the floor?",
+    "type": "research_interior_gravity",
+    "description": "interior gravity fields + opponent shot location on/off"
+  },
+  {
+    "id": 73,
+    "tier": 3,
+    "query": "What happens to the Thunder's offense in the second half of back-to-backs?",
+    "type": "research_splits",
+    "description": "team, schedule-derived game set, half splits, offensive rating"
+  },
+  {
+    "id": 74,
+    "tier": 3,
+    "query": "Which lineups drove the Knicks' playoff run, and were they sustainable?",
+    "type": "research_lineups",
+    "description": "lineup data, Playoffs, minutes + net rating, sample-size caveat"
+  },
+  {
+    "id": 75,
+    "tier": 3,
+    "query": "Has Tatum's midrange efficiency improved or just his volume?",
+    "type": "research_shot_zones",
+    "description": "shot-zone data over time, efficiency and volume shown separately"
+  },
+  {
+    "id": 76,
+    "tier": 3,
+    "query": "Rank teams by halftime adjustments: third-quarter net rating minus first-half net rating",
+    "type": "research_adjustments",
+    "description": "league-wide half/period splits, derived adjustment metric, ranked"
+  },
+  {
+    "id": 77,
+    "tier": 3,
+    "query": "Do teams actually shoot worse on the second night of a back-to-back, pace-adjusted?",
+    "type": "research_schedule",
+    "description": "league-wide, back-to-back game set, pace-adjusted shooting vs baseline"
+  },
+  {
+    "id": 78,
+    "tier": 3,
+    "query": "Who are the best pick-and-roll ball handlers by points per possession, minimum 200 possessions?",
+    "type": "research_synergy",
+    "description": "synergy play-type data, PPP, minimum-possessions filter, ranked"
+  },
+  {
+    "id": 79,
+    "tier": 3,
+    "query": "How does a player's on/off net rating change when you control for who else is on the floor?",
+    "type": "research_adjusted_on_off",
+    "description": "on/off + lineup data, adjusted vs raw side by side, confounding stated"
+  },
+  {
+    "id": 80,
+    "tier": 3,
+    "query": "Track a player's rolling 10-game TS% across a season and flag the slump",
+    "type": "research_time_series",
+    "description": "game log, rolling 10-game TS% in code, slump threshold stated"
+  },
+  {
+    "id": 81,
+    "tier": 4,
+    "query": "What made the Knicks so dominant in the playoffs?",
+    "type": "thesis",
+    "description": "thesis flow, ACH matrix, Four Factors, counter-evidence"
+  },
+  {
+    "id": 82,
+    "tier": 4,
+    "query": "What do analysts mean when they say Curry has gravity, and is it real?",
+    "type": "definition_gravity",
+    "description": "definition registry + GravityLeaders + on/off cross-check + counter-evidence"
+  },
+  {
+    "id": 83,
+    "tier": 4,
+    "query": "Same question for Wemby — he doesn't shoot threes, so where's his gravity?",
+    "type": "definition_interior_gravity",
+    "description": "interior gravity evidence pack, archetype switch stated explicitly"
+  },
+  {
+    "id": 84,
+    "tier": 4,
+    "query": "What adjustments generally happen after halftime?",
+    "type": "missing_scope",
+    "description": "ask one clarifying question, then half splits"
+  },
+  {
+    "id": 85,
+    "tier": 4,
+    "query": "3 is greater than 2, so why do the best players still shoot midranges?",
+    "type": "paradox",
+    "description": "shot-zone data conditioned by tier, clock, and season type"
+  },
+  {
+    "id": 86,
+    "tier": 4,
+    "query": "Is the midrange dead, or just mispriced?",
+    "type": "thesis_definition",
+    "description": "define 'dead', compute attempt share and efficiency trends"
+  },
+  {
+    "id": 87,
+    "tier": 4,
+    "query": "Who is the most clutch player in the league, and what does clutch even mean?",
+    "type": "definition_sensitivity",
+    "description": "state clutch definition, compute under it, show sensitivity to choice"
+  },
+  {
+    "id": 88,
+    "tier": 4,
+    "query": "Did the trade actually make the Lakers better, or did the schedule get easier?",
+    "type": "causal_splits",
+    "description": "before/after splits + opponent-strength control, causal language guarded"
+  },
+  {
+    "id": 89,
+    "tier": 4,
+    "query": "Why do some great regular-season teams collapse in the playoffs?",
+    "type": "thesis_multi_factor",
+    "description": "thesis flow, multiple candidate factors, counter-evidence, sample caveats"
+  },
+  {
+    "id": 90,
+    "tier": 4,
+    "query": "What would happen to the Warriors' spacing if Curry sat for a month?",
+    "type": "counterfactual",
+    "description": "on/off-based estimate, labelled as a model, not a measurement"
+  },
+  {
+    "id": 91,
+    "tier": 5,
+    "query": "How many points did Michael Jordan score for the Lakers in 2023-24?",
+    "trap": "false_premise",
+    "reason": "Jordan never played for Lakers and was not active in 2023-24",
+    "expected_action": "refusal_correction"
+  },
+  {
+    "id": 92,
+    "tier": 5,
+    "query": "What was Wemby's gravity score in 1995-96?",
+    "trap": "career_range",
+    "reason": "Wemby not in league / not born in 1995-96",
+    "expected_action": "refusal_correction"
+  },
+  {
+    "id": 93,
+    "tier": 5,
+    "query": "Give me LeBron's stats for the 2024-25 Finals",
+    "trap": "non_existent_event",
+    "reason": "Lakers did not reach 2024-25 Finals",
+    "expected_action": "refusal_correction"
+  },
+  {
+    "id": 94,
+    "tier": 5,
+    "query": "Which player has the highest 3P% among players who never attempted a three?",
+    "trap": "empty_set_zero_division",
+    "reason": "Denominator is 0, empty set",
+    "expected_action": "refusal_explanation"
+  },
+  {
+    "id": 95,
+    "tier": 5,
+    "query": "Rank all 30 teams by their best player's gravity score",
+    "trap": "undefined_subjective",
+    "reason": "'Best player' undefined, coverage varies",
+    "expected_action": "caveat_or_refuse"
+  },
+  {
+    "id": 96,
+    "tier": 5,
+    "query": "What endpoint gives real-time player tracking for a game that hasn't happened yet?",
+    "trap": "future_data",
+    "reason": "Future data does not exist",
+    "expected_action": "explain_no_future_data"
+  },
+  {
+    "id": 97,
+    "tier": 5,
+    "query": "Compare the 1996 Bulls to the 2024 Celtics using tracking data",
+    "trap": "era_mismatch",
+    "reason": "Tracking data did not exist in 1996",
+    "expected_action": "explain_era_mismatch"
+  },
+  {
+    "id": 98,
+    "tier": 5,
+    "query": "Show me the box score for the game where Kobe scored 100",
+    "trap": "false_memory",
+    "reason": "Wilt scored 100, Kobe scored 81",
+    "expected_action": "refusal_correction"
+  },
+  {
+    "id": 99,
+    "tier": 5,
+    "query": "What's the best stat to predict championships?",
+    "trap": "overclaiming_undefined",
+    "reason": "'Best' undefined, prediction != explanation",
+    "expected_action": "no_single_stat_discuss_limits"
+  },
+  {
+    "id": 100,
+    "tier": 5,
+    "query": "Answer with a single number: how good is Jokic?",
+    "trap": "forced_reductionism",
+    "reason": "'How good' is multidimensional",
+    "expected_action": "refuse_single_number_panel"
+  }
+]

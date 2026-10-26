@@ -63,7 +63,9 @@ class NBAQueryAnalyzer:
             "gravity", "dominant", "dominance", "why", "halftime", "adjustment",
             "adjustments", "paradox", "true shooting", "on/off", "on-off", "ts%", "efg%",
             "sustainable", "collapse", "intangible", "intangibles", "spacing",
-            "midrange", "clutch", "rim deterrence", "slump", "thesis", "second half"
+            "midrange", "clutch", "rim deterrence", "slump", "thesis", "second half",
+            "rim attempts", "on the floor", "back-to-back", "pace-adjusted", "pick-and-roll",
+            "points per possession", "schedule"
         ]
         return any(k in q_lower for k in research_keywords)
 
@@ -214,6 +216,37 @@ class NBAQueryAnalyzer:
             final_text = ""
             
             # 3. Direct Code Dispatch
+            if plan.tool == "premise_correction" or plan.direct_response:
+                yield {"type": "thought", "content": f"Premise check triggered: {plan.reason}"}
+                yield {"type": "final_answer", "content": plan.direct_response}
+                return
+
+            if plan.plans:
+                # Multi-plan execution (e.g. multi-player comparison, regular vs playoff)
+                combined_data = {}
+                for sub_plan in plan.plans:
+                    target_tool = sub_plan.get("tool", "call_nba_api")
+                    target_ep = sub_plan.get("endpoint", "PlayerGameLog")
+                    target_params = sub_plan.get("params", {})
+                    label = sub_plan.get("player_name") or sub_plan.get("team_name") or sub_plan.get("season_type") or target_ep
+                    
+                    if target_tool == "query_historical_database":
+                        from nlp.sql_tool import HistoricalSQLTool
+                        sql_tool = HistoricalSQLTool()
+                        sub_data = sql_tool.execute_sql(sub_plan.get("sql_query", ""))
+                    else:
+                        sub_data = execute_api_call(target_ep, target_params)
+                    combined_data[label] = sub_data
+                
+                for event in self.synthesizer.synthesize(query, combined_data, endpoint_name="Multi-Endpoint Comparison", model_name=model_name):
+                    yield event
+                    if event.get("type") == "final_answer":
+                        final_text = event.get("content", "")
+                
+                if final_text and not final_text.startswith("Error"):
+                    self.cache.set(query, final_text)
+                return
+
             if plan.tool == "search_api_docs":
                 yield {"type": "tool_call", "tool": "search_api_docs", "params": plan.params}
                 from nlp.meta_tools import MetaToolExecutor

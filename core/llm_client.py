@@ -12,6 +12,9 @@ import os
 import json
 import logging
 from typing import Optional, Dict, Any, List
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from core.telemetry import TelemetryManager
 

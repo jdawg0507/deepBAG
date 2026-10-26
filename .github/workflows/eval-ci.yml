@@ -30,10 +30,21 @@ jobs:
         run: |
           pytest tests/test_cache.py tests/test_rate_limiter.py tests/test_schemas.py tests/test_telemetry.py -v
 
-      - name: Run DeepEval 50-Query Benchmark CI Gate
+      - name: Run DeepEval 50-Query Dev Benchmark CI Gate (Questions 1-50)
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          NEBIUS_API_KEY: ${{ secrets.NEBIUS_API_KEY }}
           LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
           LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
         run: |
           pytest tests/evals/test_deepbag_evals.py -s -v
+
+      - name: Run DeepEval 50-Query Held-Out Benchmark CI Gate (Questions 51-100)
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          NEBIUS_API_KEY: ${{ secrets.NEBIUS_API_KEY }}
+          LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+          LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+        run: |
+          pytest tests/evals/test_held_out_evals.py -s -v
+

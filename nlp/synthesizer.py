@@ -104,6 +104,7 @@ class Synthesizer:
         self.llm_client = UnifiedLLMClient(model=default_model)
         self.verifier = SynthesisVerifier()
         self.default_model = self.llm_client.model
+        self.fallback_models = ["nvidia/nemotron-3-super-120b-a12b", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite"]
 
     def synthesize(
         self,
