@@ -79,7 +79,7 @@ class CodeVerifier:
                         )
 
             # Check era and career bounds
-            call_season = params.get("season") or season or "2023-24"
+            call_season = params.get("season") or season
             target_player = None
             if players_meta:
                 # Find corresponding player if call has player_id
@@ -91,6 +91,9 @@ class CodeVerifier:
                             break
                 if not target_player and len(players_meta) == 1:
                     target_player = players_meta[0]
+
+            if not call_season and target_player:
+                call_season = f"{target_player.to_year - 1}-{str(target_player.to_year)[-2:]}"
 
             try:
                 ds = resolve_data_source(target_player, call_season, spec)

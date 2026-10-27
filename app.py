@@ -6,15 +6,14 @@ from typing import Optional
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 
 # Load .env file automatically
 load_dotenv()
 
 # Add directory to sys.path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-
 
 from nba_nlp_analyzer_modular import NBAQueryAnalyzer
 from core.schemas import ChatRequest, ChatResponse
@@ -44,7 +43,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-API_KEY = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY") or os.environ.get("NEBIUS_API_KEY")
+API_KEY = os.environ.get("NEBIUS_API_KEY") or os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
 ACTIVE_PORT = int(os.environ.get("PORT", "8000"))
 
 print("Initializing NBA Query Analyzer in FastAPI app...")
@@ -53,11 +52,31 @@ try:
         print("Notice: No LLM API key environment variable is set. Running in offline mode.")
         analyzer = None
     else:
+        provider_name = "Nebius (NVIDIA Nemotron 120B)" if (API_KEY and API_KEY.startswith("v1.")) else "Gemini"
+        print(f"Using LLM Provider: {provider_name}")
         analyzer = NBAQueryAnalyzer(api_key=API_KEY)
         print("Analyzer initialization complete.")
 except Exception as e:
     print(f"Failed to initialize analyzer: {e}")
     analyzer = None
+
+# Serve frontend webapp if dist directory exists
+DIST_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dist")
+if os.path.exists(DIST_DIR):
+    assets_dir = os.path.join(DIST_DIR, "assets")
+    if os.path.exists(assets_dir):
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+    @app.get("/")
+    async def serve_index():
+        return FileResponse(os.path.join(DIST_DIR, "index.html"))
+
+    @app.get("/favicon.svg")
+    async def serve_favicon():
+        fav = os.path.join(DIST_DIR, "favicon.svg")
+        if os.path.exists(fav):
+            return FileResponse(fav)
+        raise HTTPException(status_code=404)
 
 
 @app.get("/api/chat")

@@ -63,3 +63,35 @@ def test_unified_llm_client_initialization():
     client = UnifiedLLMClient()
     assert client.provider in ("gemini", "nebius")
     assert client.client is not None
+
+
+def test_resolve_data_source_null_season():
+    """Verify that season=None is safely handled without TypeError or false era rejections"""
+    from catalogue.schema import EndpointSpec, resolve_data_source, DataSource
+    spec = EndpointSpec(
+        endpoint_name="PlayerGameLog",
+        min_season="1980-81",
+        entity_grain="player",
+        capability_card="Game log",
+        has_historical_equivalent=True
+    )
+    ds = resolve_data_source(player=None, season=None, endpoint=spec)
+    assert ds == DataSource.NBA_API_LIVE
+
+
+def test_code_verifier_historical_era_anchoring():
+    """Verify that omitting a season for a retired player anchors to their active era rather than injecting 2023-24"""
+    from catalogue.schema import PlayerMeta
+    from router.intent_parser import IntentParser
+    
+    wilt = PlayerMeta(id=76375, full_name="Wilt Chamberlain", from_year=1959, to_year=1973)
+    code_verifier = IntentParser().verifier
+    res = code_verifier.verify_plan(
+        endpoint_calls=[{"endpoint": "PlayerGameLog", "params": {"player_id": 76375}}],
+        players_meta=[wilt],
+        season=None
+    )
+    # Must NOT blame the user for requesting 2023-24
+    if not res.is_valid:
+        assert "2023-24" not in res.error_message
+        assert "1972-73" in res.error_message or "CareerBoundsError" not in res.error_message

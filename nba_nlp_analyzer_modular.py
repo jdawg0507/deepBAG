@@ -109,7 +109,7 @@ class NBAQueryAnalyzer:
 
         for step in plan.steps:
             yield {"type": "tool_call", "tool": "caesura_step", "params": {"step_id": step.step_id, "endpoint": step.endpoint, "params": step.params}}
-            res = self.nba_client.call(step.endpoint, step.params, use_cache=True, timeout=4, max_retries=1)
+            res = self.nba_client.call(step.endpoint, step.params, use_cache=True, timeout=12, max_retries=2)
             yield {
                 "type": "tool_result",
                 "tool": "caesura_step",
@@ -124,6 +124,49 @@ class NBAQueryAnalyzer:
 
             # 4. Deterministic Analytics Extraction & Evidence Claim Registration
             datasets = res.get("datasets", {})
+            total_rows = sum(len(rows) for rows in datasets.values()) if datasets else 0
+
+            # Dynamic DAG Traversal / Backtracking if endpoint timed out, errored, or returned 0 rows
+            if res.get("status") != "success" or total_rows == 0:
+                tried_endpoints = {step.endpoint}
+                while True:
+                    fallback_step = self.caesura_planner.get_fallback_step(step, plan, tried_endpoints)
+                    if not fallback_step:
+                        break
+                    tried_endpoints.add(fallback_step.endpoint)
+                    yield {
+                        "type": "thought",
+                        "content": f"Primary endpoint `{step.endpoint}` returned no data or timed out. Dynamically traversing CAESURA DAG to fallback candidate `{fallback_step.endpoint}`..."
+                    }
+                    yield {
+                        "type": "tool_call",
+                        "tool": "caesura_step",
+                        "params": {"step_id": fallback_step.step_id, "endpoint": fallback_step.endpoint, "params": fallback_step.params}
+                    }
+                    fb_res = self.nba_client.call(fallback_step.endpoint, fallback_step.params, use_cache=True, timeout=12, max_retries=2)
+                    fb_datasets = fb_res.get("datasets", {})
+                    fb_rows = sum(len(rows) for rows in fb_datasets.values()) if fb_datasets else 0
+                    yield {
+                        "type": "tool_result",
+                        "tool": "caesura_step",
+                        "result": {
+                            "step_id": fallback_step.step_id,
+                            "status": fb_res.get("status"),
+                            "cached": fb_res.get("cached"),
+                            "datasets": list(fb_datasets.keys()),
+                            "latency_ms": fb_res.get("latency_ms", 0)
+                        }
+                    }
+                    if fb_res.get("status") == "success" and fb_rows > 0:
+                        res = fb_res
+                        datasets = fb_datasets
+                        step = fallback_step
+                        total_rows = fb_rows
+                        intent.assumptions.append(
+                            f"Primary endpoint was unavailable; dynamically backtracked to {fallback_step.endpoint}."
+                        )
+                        break
+
             if datasets:
                 step_entity = step.step_id.split("_", 1)[1] if "_" in step.step_id else None
                 evidence_table.register_dataset_claims(
@@ -143,7 +186,17 @@ class NBAQueryAnalyzer:
             if event.get("type") == "final_answer":
                 final_text = event.get("content", "")
 
-        if final_text and not final_text.startswith("Error"):
+        # Only cache responses that are successful and not transient errors/fail-closed states
+        is_unsuitable_for_cache = (
+            not final_text or
+            final_text.startswith("Error") or
+            "Data Unavailable" in final_text or
+            "Synthesis Blocked" in final_text or
+            "Number Lock: FAILED" in final_text or
+            "Number Lock: FAIL-CLOSED" in final_text or
+            len(evidence_table.all_claims()) == 0
+        )
+        if not is_unsuitable_for_cache:
             self.cache.set(query, final_text)
 
     def process_query_agentic(self, query, model_name=None):

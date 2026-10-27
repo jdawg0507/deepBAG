@@ -280,15 +280,36 @@ Synthesize a clear, analytical answer. Reference statistics ONLY via claim IDs i
                 is_thesis=is_thesis
             )
 
-        verification_badge = "🛡️ **Number Lock: ALIGNED** (100% of numerals verified against evidence ledger)" if passed else (
-            f"⚠️ **Number Lock: PARTIAL** ({reason})"
-        )
+        if not passed:
+            yield {
+                "type": "verifier_status",
+                "passed": False,
+                "status": "UNALIGNED",
+                "unaligned": unaligned,
+            }
+            fail_payload = (
+                f"{scope_receipt}\n\n"
+                f"### ⚠️ Synthesis Blocked (Fail-Closed Number-Lock Enforcement)\n"
+                f"deepBAG detected unverified numerical tokens in the generated response that could not be aligned with the cryptographic evidence ledger.\n\n"
+                f"**Verification Reason**: {reason}\n"
+                f"**Unaligned Tokens**: {unaligned}\n\n"
+                f"**Integrity Guarantee**: Under deepBAG's strict mechanical number-lock architecture, "
+                f"responses with unverified numbers are blocked to eliminate numerical hallucination.\n\n"
+                f"---\n"
+                f"### Statistical Provenance Appendix\n"
+                f"🛡️ **Number Lock: FAILED** (Verification failed: {reason})\n\n"
+                f"{claims_table_md}\n"
+            )
+            yield {"type": "final_answer", "content": fail_payload}
+            return
+
+        verification_badge = "🛡️ **Number Lock: ALIGNED** (100% of numerals verified against evidence ledger)"
         
         yield {
             "type": "verifier_status",
-            "passed": passed,
-            "status": "ALIGNED" if passed else "UNALIGNED",
-            "unaligned": unaligned,
+            "passed": True,
+            "status": "ALIGNED",
+            "unaligned": [],
         }
 
         # Build final rendered markdown payload

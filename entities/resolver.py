@@ -158,7 +158,7 @@ class EntityResolver:
                 p["from_year"], p["to_year"] = self.career_bounds[pid]
             else:
                 p["from_year"] = p.get("from_year", 1946)
-                p["to_year"] = p.get("to_year", 2024)
+                p["to_year"] = p.get("to_year", 2027)
 
             norm = normalize_text(p["full_name"])
             self.player_by_norm[norm] = p

@@ -9,17 +9,17 @@ Strict post-generation verifier that guarantees:
 Fail-Closed: If any numeral fails alignment, synthesis is blocked.
 """
 import re
+import json
 import logging
-from typing import Tuple, List, Set, Optional
+from typing import Tuple, List, Set, Optional, Any
 from core.evidence import EvidenceTable
 
 logger = logging.getLogger("deepbag.verifier")
 
-# Permitted baseline integers (e.g., quarter numbers, rankings, standard basketball constants)
+# Permitted baseline integers (strictly non-box-score structural constants)
 ALLOWLISTED_INTEGERS = {
-    "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
-    "12", "24", "48", "100", # shot clock, minutes, per 100
-    "0", "2023", "2024", "2025", "2026", # season references
+    "0", "1", "2", "3", "4", # quarter/overtime indices (Q1-Q4, baseline 0)
+    "2020", "2021", "2022", "2023", "2024", "2025", "2026", # season references
 }
 
 CAUSAL_PHRASES = [
@@ -33,17 +33,50 @@ class SynthesisVerifier:
         self.allowlist = set(allowlisted_numbers or ALLOWLISTED_INTEGERS)
 
     def extract_numerals(self, text: str) -> List[str]:
-        """Extract all raw numerals and percentages from prose text, excluding chart/graph code blocks"""
-        # Strip chart, graph, and svg code blocks so declarative visual configs are not audited as bare prose numbers
+        """Extract all raw numerals and percentages from prose text and data points from chart/graph blocks."""
+        cleaned = []
+
+        # 1. Parse and extract data coordinates from chart and graph code blocks
+        chart_blocks = re.findall(r'```(?:chartjs|chart|graph|network|svg|json:chart)([\s\S]*?)```', text)
+        for block in chart_blocks:
+            content = block.strip()
+            try:
+                data_obj = json.loads(content)
+                cleaned.extend(self._extract_chart_numbers(data_obj))
+            except Exception:
+                for m in re.finditer(r'"(?:data|values|x|y|value|weight)"\s*:\s*\[?([^\]}\n]+)\]?', content):
+                    matches = re.findall(r'\b\d+(?:\.\d+)?%?\b', m.group(1))
+                    cleaned.extend([v.replace("%", "").strip() for v in matches])
+
+        # 2. Strip chart/graph blocks from prose so formatting/layout integers are not audited as bare prose
         clean_text = re.sub(r'```(?:chartjs|chart|graph|network|svg|json:chart)[\s\S]*?```', '', text)
-        # Match integers, floating points, percentages
+
+        # 3. Match integers, floating points, percentages
         pattern = r'\b\d+(?:\.\d+)?%?\b'
         matches = re.findall(pattern, clean_text)
-        cleaned = []
         for m in matches:
             val = m.replace("%", "").strip()
             cleaned.append(val)
         return cleaned
+
+    def _extract_chart_numbers(self, obj: Any) -> List[str]:
+        """Recursively extracts data point numerals from chart/graph JSON structures."""
+        nums = []
+        if isinstance(obj, (int, float)) and not isinstance(obj, bool):
+            nums.append(str(obj))
+        elif isinstance(obj, list):
+            for item in obj:
+                nums.extend(self._extract_chart_numbers(item))
+        elif isinstance(obj, dict):
+            for k, v in obj.items():
+                if k in ("data", "datasets", "nodes", "links", "values", "x", "y", "r", "value", "weight"):
+                    nums.extend(self._extract_chart_numbers(v))
+                elif k not in ("options", "scales", "plugins", "borderWidth", "borderRadius", "fontSize", "pointRadius", "width", "height", "responsive"):
+                    if isinstance(v, (list, dict)):
+                        nums.extend(self._extract_chart_numbers(v))
+                    elif isinstance(v, (int, float)) and not isinstance(v, bool):
+                        nums.append(str(v))
+        return nums
 
     def verify_numerals(self, text: str, evidence: EvidenceTable) -> Tuple[bool, List[str]]:
         """

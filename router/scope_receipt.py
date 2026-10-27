@@ -181,9 +181,10 @@ class TemporalResolver:
                 "assumption_text": f"Mapped calendar year {y_val} to {inferred_season} season."
             }
 
-        # Default fallback: Unspecified season defaults to current season ONLY with explicit assumption
+        # Default fallback: Unspecified season defaults to career statistics (or current season if season-constrained)
         return {
-            "season": curr_season,
+            "season": None,
+            "timeframe": "Career",
             "is_assumed": True,
-            "assumption_text": f"Assumed current season ({curr_season}) as no season or date was specified."
+            "assumption_text": f"Assumed career statistics (or current season {curr_season} if season-constrained) as no season or date was specified."
         }

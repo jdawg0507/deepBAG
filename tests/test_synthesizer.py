@@ -35,3 +35,34 @@ def test_synthesizer_init():
     synth = Synthesizer()
     assert synth.default_model is not None
     assert len(synth.fallback_models) >= 2
+
+
+def test_synthesize_research_fails_closed_on_unaligned_numerals():
+    """Verify that hallucinated numerals cause synthesis to fail closed without emitting hallucinated text"""
+    from unittest.mock import MagicMock
+    from core.evidence import EvidenceTable
+    from core.schemas import IntentContract, QuestionType
+    
+    synth = Synthesizer()
+    mock_llm = MagicMock()
+    mock_llm.generate.return_value = "LeBron James scored 77 points and had 33 assists [C1]."
+    synth.llm_client = mock_llm
+    
+    evidence = EvidenceTable()
+    evidence.add_claim("PTS", 30.0, "PlayerGameLog", formatted_value="30")
+    
+    intent = IntentContract(
+        question_type=QuestionType.SINGLE,
+        entities=[],
+        season="2023-24",
+        interpretation="Test intent"
+    )
+    
+    events = list(synth.synthesize_research("How many points did LeBron score?", evidence, intent))
+    final_events = [e for e in events if e.get("type") == "final_answer"]
+    assert len(final_events) == 1
+    final_content = final_events[0]["content"]
+    
+    assert "Synthesis Blocked (Fail-Closed Number-Lock Enforcement)" in final_content
+    assert "Number Lock: FAILED" in final_content
+    assert "LeBron James scored 77 points" not in final_content

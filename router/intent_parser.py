@@ -29,9 +29,10 @@ class EndpointCallPlan(BaseModel):
 class QueryPlan(BaseModel):
     entities_raw: List[str] = Field(default_factory=list)
     temporal_expression: Optional[str] = None
-    season: str = "2023-24"
+    season: Optional[str] = None
     season_type: str = "Regular Season"
     endpoint_calls: List[EndpointCallPlan] = Field(default_factory=list)
+    fallback_candidates: List[str] = Field(default_factory=list)
     reasoning: str
     scope_receipt: Optional[ScopeReceipt] = None
 
@@ -50,7 +51,7 @@ JSON Output Schema:
 {
   "entities_raw": ["<Raw Entity Name 1>", ...],
   "temporal_expression": "<Extracted temporal phrase, e.g. 'rookie year', 'last 5 games', '2023-24', or null>",
-  "season": "<YYYY-YY format, e.g. '2023-24'>",
+  "season": "<YYYY-YY format or null if query is about career or no specific season is mentioned>",
   "season_type": "'Regular Season' or 'Playoffs'",
   "endpoint_calls": [
     {
@@ -61,18 +62,22 @@ JSON Output Schema:
       "entity_label": "<Player or Team Name or null for league-wide>"
     }
   ],
-  "reasoning": "<Short analytical rationale for endpoint selection>"
+  "fallback_candidates": ["<Candidate Endpoint Name to try if primary fails>", ...],
+  "reasoning": "<Short analytical rationale for endpoint and fallback selection>"
 }
 
 RULES:
 1. You may ONLY select endpoints from the Candidate Endpoints list provided in the prompt.
 2. For multi-player comparisons, emit an endpoint call for EACH player (or a single league-wide call).
 3. Set season_type to "Playoffs" if query mentions playoffs, postseason, or Finals.
-4. When a query asks about a player's performance against an opponent team (e.g. 'vs Celtics'), query the player's endpoint (e.g. PlayerGameLog) with the player; do NOT emit an unjoinable team endpoint call.
-5. Prefer PlayerGameLog for individual player game performances, matchups, and game-level splits.
-6. Use Optional Params (e.g. play_type_nullable='Isolation', player_or_team_abbreviation='P', game_segment_nullable='Second Half') whenever relevant to satisfy the user's specific analytic scope. Allowed values are strictly provided in each endpoint card.
-7. For open-ended or league-wide queries ("who were the best players", "which teams"), leave entities_raw as [] and use league-wide endpoints (or set player_or_team_abbreviation='P' on SynergyPlayTypes). Do NOT ask for clarification if a league-wide query can be answered via league endpoints.
-8. Output valid JSON only.
+4. If no season is mentioned in query, prefer career endpoints (such as PlayerCareerStats) with season as null.
+5. When querying a specific team or player, you MUST select entity-specific endpoints that accept team_id (for teams) or player_id (for players). Never select league-grain endpoints without entity filters (such as FranchiseHistory or LeagueStandings) when a specific team or player is queried.
+6. When a query asks about a player's performance against an opponent team (e.g. 'vs Celtics'), query the player's endpoint (e.g. PlayerGameLog) with the player; do NOT emit an unjoinable team endpoint call.
+7. Prefer PlayerGameLog for individual player game performances, matchups, and game-level splits.
+8. Use Optional Params (e.g. play_type_nullable='Isolation', player_or_team_abbreviation='P', game_segment_nullable='Second Half') whenever relevant to satisfy the user's specific analytic scope. Allowed values are strictly provided in each endpoint card.
+9. For open-ended or league-wide queries ("who were the best players", "which teams"), leave entities_raw as [] and use league-wide endpoints (or set player_or_team_abbreviation='P' on SynergyPlayTypes). Do NOT ask for clarification if a league-wide query can be answered via league endpoints.
+10. In fallback_candidates, list 1-3 candidate endpoint names from Candidate Endpoints to use as fallbacks if the primary endpoint fails or returns no data.
+11. Output valid JSON only.
 """
 
 class IntentParser:
@@ -208,17 +213,21 @@ Candidate Endpoints (You MUST select from this pool):
 
         if temporal_info.get("is_assumed") and players_meta and resolved_season:
             latest_to_year = min(p.to_year for p in players_meta)
-            try:
-                season_start = int(resolved_season.split("-")[0])
-                if season_start >= latest_to_year:
-                    clamped_start = latest_to_year - 1
-                    resolved_season = f"{clamped_start}-{str(latest_to_year)[-2:]}"
-                    assumptions.append(f"Defaulted to latest active season {resolved_season} within career bounds.")
-                elif temporal_info.get("assumption_text"):
-                    assumptions.append(temporal_info["assumption_text"])
-            except Exception:
-                if temporal_info.get("assumption_text"):
-                    assumptions.append(temporal_info["assumption_text"])
+            # Only clamp if the player is retired (prior to current era)
+            if latest_to_year < 2026:
+                try:
+                    season_start = int(resolved_season.split("-")[0])
+                    if season_start >= latest_to_year:
+                        clamped_start = latest_to_year - 1
+                        resolved_season = f"{clamped_start}-{str(latest_to_year)[-2:]}"
+                        assumptions.append(f"Defaulted to latest active season {resolved_season} within career bounds.")
+                    elif temporal_info.get("assumption_text"):
+                        assumptions.append(temporal_info["assumption_text"])
+                except Exception:
+                    if temporal_info.get("assumption_text"):
+                        assumptions.append(temporal_info["assumption_text"])
+            elif temporal_info.get("assumption_text"):
+                assumptions.append(temporal_info["assumption_text"])
         elif temporal_info.get("is_assumed") and temporal_info.get("assumption_text"):
             assumptions.append(temporal_info["assumption_text"])
 
@@ -241,12 +250,24 @@ Candidate Endpoints (You MUST select from this pool):
                 continue
             spec = self.catalogue[ep_name]
             all_param_names = [p.get("name") for p in spec.get("required_params", []) + spec.get("optional_params", [])]
+            req_param_names = [p.get("name") for p in spec.get("required_params", [])]
             params = dict(c.get("params", {}))
 
             # Season binding
             for s_key in ("season", "season_nullable"):
                 if s_key in all_param_names and s_key not in params:
-                    params[s_key] = resolved_season
+                    if resolved_season:
+                        params[s_key] = resolved_season
+                    elif s_key in req_param_names:
+                        # Only bind fallback season if strictly required by the endpoint schema
+                        if players_meta:
+                            p_to = min(p.to_year for p in players_meta)
+                            if p_to < 2026:
+                                params[s_key] = f"{p_to - 1}-{str(p_to)[-2:]}"
+                            else:
+                                params[s_key] = TemporalResolver.current_season()
+                        else:
+                            params[s_key] = TemporalResolver.current_season()
 
             # Season type binding
             for st_key in ("season_type_all_star", "season_type_playoffs", "season_type_nullable"):
@@ -287,6 +308,13 @@ Candidate Endpoints (You MUST select from this pool):
             season=resolved_season
         )
 
+        # Extract prompt-generated fallback candidates
+        raw_fallbacks = raw_plan.get("fallback_candidates", [])
+        fallback_candidates = [
+            c for c in raw_fallbacks
+            if isinstance(c, str) and c in self.catalogue
+        ]
+
         # Build final QueryPlan
         plan = QueryPlan(
             entities_raw=raw_entities,
@@ -294,6 +322,7 @@ Candidate Endpoints (You MUST select from this pool):
             season=resolved_season,
             season_type=season_type,
             endpoint_calls=calls,
+            fallback_candidates=fallback_candidates,
             reasoning=raw_plan.get("reasoning", "Synthesized via Nebius Nemotron"),
             scope_receipt=scope_receipt
         )

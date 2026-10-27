@@ -333,5 +333,6 @@ class LogicalPlan(BaseModel):
     intent: IntentContract
     steps: List[PlanStep] = Field(default_factory=list)
     target_claims: List[str] = Field(default_factory=list)
+    fallback_candidates: List[str] = Field(default_factory=list, description="Alternative candidate endpoints for DAG backtracking")
 
 

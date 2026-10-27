@@ -110,3 +110,43 @@ async def test_async_canonical_api_data_caching():
     assert await cache.aset_api_data(endpoint, params, data) is True
     assert await cache.aget_api_data(endpoint, params) == data
 
+
+def test_negative_caching_exclusion_for_fail_closed():
+    """Verify that transient API timeout and fail-closed responses are not saved to cache"""
+    from unittest.mock import MagicMock
+    from nba_nlp_analyzer_modular import NBAQueryAnalyzer
+    from core.schemas import IntentContract, QuestionType
+    
+    analyzer = NBAQueryAnalyzer.__new__(NBAQueryAnalyzer)
+    analyzer.cache = RedisQueryCache()
+    analyzer.synthesizer = MagicMock()
+    analyzer.caesura_planner = MagicMock()
+    analyzer.client = MagicMock()
+    
+    analyzer.caesura_planner.extract_intent.return_value = IntentContract(
+        question_type=QuestionType.SINGLE,
+        entities=[],
+        season="2023-24",
+        interpretation="Test"
+    )
+    analyzer.caesura_planner.build_logical_plan.return_value = MagicMock(steps=[])
+    analyzer.caesura_planner.validate_plan_schema.return_value = (True, [])
+    from core.evidence import EvidenceTable
+    analyzer.caesura_planner.execute_plan.return_value = (EvidenceTable(), {})
+    
+    # Synthesizer yields Data Unavailable fail-closed payload
+    fail_payload = (
+        "📋 **Scope Receipt:** Season: **2023-24**\n\n"
+        "### ⚠️ Data Unavailable (Fail-Closed Enforcement)\n"
+        "deepBAG was unable to retrieve verified data from the NBA API..."
+    )
+    analyzer.synthesizer.synthesize_research.return_value = [
+        {"type": "final_answer", "content": fail_payload}
+    ]
+    
+    query = "Steph Curry points tonight"
+    events = list(analyzer._process_research_flow(query))
+    
+    # Must NOT be stored in cache
+    assert analyzer.cache.get(query) is None
+

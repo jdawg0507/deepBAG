@@ -19,22 +19,12 @@ import pandas as pd
 from core.cache import RedisQueryCache
 from core.rate_limiter import RedisSlidingWindowRateLimiter
 from core.telemetry import TelemetryManager
+from nba_api.stats.library.http import STATS_HEADERS
 
 logger = logging.getLogger("deepbag.nba_client")
 
-# Production browser headers required by stats.nba.com
-DEFAULT_HEADERS = {
-    'Host': 'stats.nba.com',
-    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-    'Accept': 'application/json, text/plain, */*',
-    'Accept-Language': 'en-US,en;q=0.9',
-    'Accept-Encoding': 'gzip, deflate, br',
-    'Connection': 'keep-alive',
-    'Referer': 'https://www.nba.com/',
-    'Origin': 'https://www.nba.com',
-    'x-nba-stats-origin': 'stats',
-    'x-nba-stats-token': 'true',
-}
+# Production browser headers from nba_api matching current Chrome signatures
+DEFAULT_HEADERS = dict(STATS_HEADERS)
 
 class NBAClient:
     def __init__(

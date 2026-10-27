@@ -42,11 +42,14 @@ class EndpointSpec(BaseModel):
     capability_card: str
     has_historical_equivalent: bool = False
 
-def resolve_data_source(player: Optional[PlayerMeta], season: str, endpoint: EndpointSpec) -> DataSource:
+def resolve_data_source(player: Optional[PlayerMeta], season: Optional[str], endpoint: EndpointSpec) -> DataSource:
     """
     Computes the appropriate data source based on player career bounds,
     endpoint tracking era limitations, and historical database availability.
     """
+    if season is None:
+        return DataSource.NBA_API_LIVE
+
     try:
         target_year = int(season[:4])
     except (ValueError, TypeError, IndexError):
@@ -56,7 +59,7 @@ def resolve_data_source(player: Optional[PlayerMeta], season: str, endpoint: End
         if target_year < player.from_year or target_year > player.to_year:
             raise CareerBoundsError(f"{player.full_name} active {player.from_year}-{player.to_year}, got {season}")
 
-    if season < endpoint.min_season:
+    if endpoint.min_season and season < endpoint.min_season:
         return DataSource.HISTORICAL_DB if endpoint.has_historical_equivalent else DataSource.UNSUPPORTED_ERA
 
     return DataSource.NBA_API_LIVE
