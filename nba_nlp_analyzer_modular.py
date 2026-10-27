@@ -57,7 +57,7 @@ class NBAQueryAnalyzer:
 
         self.hybrid_router = HybridRouter(self.endpoint_library)
         self.synthesizer = Synthesizer()
-        self.caesura_planner = CaesuraPlanner(catalogue=self.endpoint_library)
+        self.caesura_planner = CaesuraPlanner()
         self.nba_client = NBAClient(cache=self.cache)
         self.entity_resolver = EntityResolver()
         self.semantic_index = SemanticEndpointIndex()
@@ -65,20 +65,15 @@ class NBAQueryAnalyzer:
             catalogue=None,
             entity_resolver=self.entity_resolver
         )
-    
-    def is_research_query(self, query: str) -> bool:
-        """Determines if a query requires multi-endpoint CAESURA research vs single-stat lookup."""
-        q_lower = query.lower()
-        research_keywords = [
-            "gravity", "dominant", "dominance", "why", "halftime", "adjustment",
-            "adjustments", "paradox", "true shooting", "on/off", "on-off", "ts%", "efg%",
-            "sustainable", "collapse", "intangible", "intangibles", "spacing",
-            "midrange", "clutch", "rim deterrence", "slump", "thesis", "second half",
-            "rim attempts", "on the floor", "back-to-back", "pace-adjusted", "pick-and-roll",
-            "points per possession", "schedule"
-        ]
-        return any(k in q_lower for k in research_keywords)
 
+    def is_research_query(self, query: str) -> bool:
+        """
+        Determines whether a query routes to the unified CAESURA Research Engine.
+        In deepBAG v2, all analytical, comparative, thesis, and tracking queries
+        are processed through the CAESURA Research Engine.
+        """
+        return True
+    
     def _process_research_flow(self, query: str, model_name: Optional[str] = None):
         """Executes the Research Engine v2 CAESURA loop with mechanical number lock."""
         from core.evidence import EvidenceTable
@@ -129,63 +124,19 @@ class NBAQueryAnalyzer:
 
             # 4. Deterministic Analytics Extraction & Evidence Claim Registration
             datasets = res.get("datasets", {})
-            for ds_name, rows in datasets.items():
-                if not rows:
-                    continue
-                first_row = rows[0]
-                
-                # Check for net rating / on-off
-                if "NET_RATING" in first_row:
-                    net_val = float(first_row.get("NET_RATING") or 0.0)
-                    claim = evidence_table.add_claim(
-                        metric_name=f"{ds_name}_NET_RATING",
-                        raw_value=net_val,
-                        endpoint=step.endpoint,
-                        params=step.params,
-                        formatted_value=f"{net_val:+.1f}",
-                        formula_version="analytics:net_rating_v1",
-                        sample_size=f"{first_row.get('MIN', 'N/A')} MIN"
-                    )
-                    if ach:
-                        ach.evaluate_evidence(claim, {"H1": "S", "H2": "S", "H_NULL": "N"})
-
-                # Check for scoring & shooting splits
-                if "PTS" in first_row and "FGA" in first_row:
-                    pts = float(first_row.get("PTS") or 0.0)
-                    fga = float(first_row.get("FGA") or 0.0)
-                    fta = float(first_row.get("FTA") or 0.0)
-                    ts_raw, ts_fmt = calculate_ts_percent(pts, fga, fta)
-                    claim = evidence_table.add_claim(
-                        metric_name=f"{ds_name}_TS%",
-                        raw_value=ts_raw,
-                        endpoint=step.endpoint,
-                        params=step.params,
-                        formatted_value=ts_fmt,
-                        formula_version="analytics:ts_v1.0"
-                    )
-                    if ach:
-                        ach.evaluate_evidence(claim, {"H1": "S", "H2": "S", "H_NULL": "N"})
-
-        # Fallback benchmark claims if live API was geoblocked or empty
-        if len(evidence_table.all_claims()) == 0:
-            if "gravity" in intent.interpretation.lower():
-                evidence_table.add_claim("ON_COURT_NET_RATING", 8.4, "TeamPlayerOnOffSummary", formatted_value="+8.4", sample_size="2100 MIN")
-                evidence_table.add_claim("OFF_COURT_NET_RATING", -3.2, "TeamPlayerOnOffSummary", formatted_value="-3.2", sample_size="750 MIN")
-                diff = calculate_on_off_differential(8.4, -3.2, actual_minutes=2850)
-                evidence_table.add_claim("ON_OFF_NET_DIFFERENTIAL", diff["net_differential"], "TeamPlayerOnOffSummary", formatted_value=diff["formatted_value"], formula_version=diff["formula_version"], sample_size="2850 MIN")
-            elif intent.question_type == "thesis":
-                c1 = evidence_table.add_claim("PLAYOFF_NET_RATING", 6.8, "TeamPlayerOnOffSummary", formatted_value="+6.8", sample_size="14 GP")
-                c2 = evidence_table.add_claim("OREB_PERCENT", 34.2, "BoxScoreFourFactorsV2", formatted_value="34.2%", sample_size="14 GP")
-                if ach:
-                    ach.evaluate_evidence(c1, {"H1": "S", "H2": "S", "H_NULL": "C"})
-                    ach.evaluate_evidence(c2, {"H1": "S", "H2": "N", "H_NULL": "C"})
-            else:
-                evidence_table.add_claim("SEASON_PTS", 25.7, "PlayerGameLog", formatted_value="25.7", sample_size="71 GP")
-                evidence_table.add_claim("SEASON_AST", 8.3, "PlayerGameLog", formatted_value="8.3", sample_size="71 GP")
+            if datasets:
+                step_entity = step.step_id.split("_", 1)[1] if "_" in step.step_id else None
+                evidence_table.register_dataset_claims(
+                    endpoint=step.endpoint,
+                    params=step.params,
+                    datasets=datasets,
+                    entity_hint=step_entity,
+                    ach=ach
+                )
 
         ach_md = ach.render_markdown_matrix() if ach else None
 
-        # 5. Mechanical Number-Locked Synthesis
+        # 5. Mechanical Number-Locked Synthesis (Fails closed if 0 claims)
         final_text = ""
         for event in self.synthesizer.synthesize_research(query, evidence_table, intent, ach_matrix_md=ach_md, model_name=model_name):
             yield event
@@ -196,8 +147,8 @@ class NBAQueryAnalyzer:
             self.cache.set(query, final_text)
 
     def process_query_agentic(self, query, model_name=None):
-        """Process an NBA stats query using the hybrid direct-code router + 1-turn synthesis architecture"""
-        print(f"\nProcessing query (Hybrid, model={model_name or 'default'}): {query}")
+        """Process an NBA stats query using the unified Research Engine v2 (CAESURA DAG + PAL Number Lock)"""
+        print(f"\nProcessing query (Unified Research Engine, model={model_name or 'default'}): {query}")
         
         # 1. Distributed Cache Lookup with Telemetry
         with TelemetryManager.start_span("deepbag.cache_lookup", {"query": query}) as cache_span:
@@ -210,154 +161,30 @@ class NBAQueryAnalyzer:
                 return
             TelemetryManager.record_cache_event(hit=False, query=query)
 
-        # 2. Research Engine v2 Dispatch
-        if self.is_research_query(query):
-            yield {"type": "thought", "content": "Routing to deepBAG Research Engine v2 (CAESURA loop + PAL Number Lock)..."}
-            for event in self._process_research_flow(query, model_name=model_name):
+        # 2. Check for direct documentation or fast premise correction
+        legacy_route = self.hybrid_router.route(query)
+        if legacy_route.tool == "premise_correction" or legacy_route.direct_response:
+            yield {"type": "thought", "content": f"Premise check triggered: {legacy_route.reason}"}
+            yield {"type": "final_answer", "content": legacy_route.direct_response}
+            return
+
+        if legacy_route.tool == "search_api_docs":
+            yield {"type": "tool_call", "tool": "search_api_docs", "params": legacy_route.params}
+            from nlp.meta_tools import MetaToolExecutor
+            executor = MetaToolExecutor(self.endpoint_library)
+            data = executor.search_api_docs(legacy_route.params.get("keywords", ""))
+            yield {"type": "tool_result", "tool": "search_api_docs", "result": data}
+            for event in self.synthesizer.synthesize(query, data, endpoint_name="Documentation", model_name=model_name):
                 yield event
             return
-            
+
+        # 3. Always dispatch to unified deepBAG Research Engine v2 (CAESURA loop + PAL Number Lock)
+        yield {"type": "thought", "content": "Routing to unified deepBAG Research Engine (CAESURA loop + PAL Number Lock)..."}
         try:
-            # 3. Check for direct documentation or premise correction
-            legacy_route = self.hybrid_router.route(query)
-            if legacy_route.tool == "premise_correction" or legacy_route.direct_response:
-                yield {"type": "thought", "content": f"Premise check triggered: {legacy_route.reason}"}
-                yield {"type": "final_answer", "content": legacy_route.direct_response}
-                return
-
-            if legacy_route.tool == "search_api_docs":
-                yield {"type": "tool_call", "tool": "search_api_docs", "params": legacy_route.params}
-                from nlp.meta_tools import MetaToolExecutor
-                executor = MetaToolExecutor(self.endpoint_library)
-                data = executor.search_api_docs(legacy_route.params.get("keywords", ""))
-                yield {"type": "tool_result", "tool": "search_api_docs", "result": data}
-                for event in self.synthesizer.synthesize(query, data, endpoint_name="Documentation", model_name=model_name):
-                    yield event
-                    if event.get("type") == "final_answer":
-                        final_text = event.get("content", "")
-                return
-
-            # 4. Two-Stage Semantic + Constrained Intent Router
-            with TelemetryManager.start_span("deepbag.semantic_routing", {"query": query}):
-                candidates = self.semantic_index.retrieve_candidates(
-                    query=query,
-                    top_k=5,
-                    shadow_keyword_matcher=self.hybrid_router.route
-                )
-                cand_names = [c[0] for c in candidates]
-                yield {"type": "thought", "content": f"FastEmbed retrieved Top-5 candidate endpoints: {', '.join(cand_names)}"}
-                semantic_plan = self.semantic_intent_parser.parse_intent(query=query, candidate_endpoints=cand_names)
-
-            if semantic_plan and semantic_plan.scope_receipt:
-                yield {"type": "thought", "content": semantic_plan.scope_receipt.format_markdown()}
-
-            final_text = ""
-
-            if semantic_plan and semantic_plan.endpoint_calls:
-                yield {"type": "thought", "content": f"Compiling QueryPlan with {len(semantic_plan.endpoint_calls)} call(s). Rationale: {semantic_plan.reasoning}"}
-
-                if len(semantic_plan.endpoint_calls) > 1:
-                    combined_data = {}
-                    for call in semantic_plan.endpoint_calls:
-                        ep = call.endpoint
-                        params = call.params
-                        lbl = call.entity_label or ep
-                        yield {"type": "tool_call", "tool": "call_nba_api", "params": {"endpoint_name": ep, "parameters": params}}
-                        sub_data = execute_api_call(ep, params)
-                        combined_data[lbl] = sub_data
-                        yield {"type": "tool_result", "tool": "call_nba_api", "result": self.agent.summarize_result(sub_data) if isinstance(sub_data, dict) else sub_data}
-
-                    for event in self.synthesizer.synthesize(query, combined_data, endpoint_name="Multi-Endpoint Comparison", model_name=model_name):
-                        yield event
-                        if event.get("type") == "final_answer":
-                            final_text = event.get("content", "")
-                    if final_text and not final_text.startswith("Error"):
-                        self.cache.set(query, final_text)
-                    return
-
-                single_call = semantic_plan.endpoint_calls[0]
-                target_ep = single_call.endpoint
-                target_params = single_call.params
-                season_val = semantic_plan.season
-
-                cached_data = self.cache.get_api_data(target_ep, target_params, season=season_val)
-                if cached_data is not None:
-                    yield {"type": "thought", "content": f"Found canonical cache hit for {target_ep}. Skipping upstream NBA API call."}
-                    data = cached_data
-                else:
-                    yield {"type": "tool_call", "tool": "call_nba_api", "params": {"endpoint_name": target_ep, "parameters": target_params}}
-                    data = execute_api_call(target_ep, target_params)
-                    if not (isinstance(data, dict) and "error" in data):
-                        self.cache.set_api_data(target_ep, target_params, data, season=season_val)
-                    yield {"type": "tool_result", "tool": "call_nba_api", "result": self.agent.summarize_result(data) if isinstance(data, dict) else data}
-
-                for event in self.synthesizer.synthesize(query, data, endpoint_name=target_ep, model_name=model_name):
-                    yield event
-                    if event.get("type") == "final_answer":
-                        final_text = event.get("content", "")
-
-                if final_text and not final_text.startswith("Error"):
-                    self.cache.set(query, final_text)
-                return
-                
-                # 4. 1-Turn Synthesis
-                for event in self.synthesizer.synthesize(query, data, endpoint_name="Documentation", model_name=model_name):
-                    yield event
-                    if event.get("type") == "final_answer":
-                        final_text = event.get("content", "")
-
-            elif plan.tool == "query_historical_database":
-                yield {"type": "tool_call", "tool": "query_historical_database", "params": {"sql_query": plan.sql_query}}
-                from nlp.sql_tool import HistoricalSQLTool
-                sql_tool = HistoricalSQLTool()
-                data = sql_tool.execute_sql(plan.sql_query or "")
-                yield {"type": "tool_result", "tool": "query_historical_database", "result": data}
-                
-                # 4. 1-Turn Synthesis
-                for event in self.synthesizer.synthesize(query, data, endpoint_name="Historical SQLite DB", model_name=model_name):
-                    yield event
-                    if event.get("type") == "final_answer":
-                        final_text = event.get("content", "")
-
-            elif plan.tool == "call_nba_api":
-                # Check Tier 1 Canonical Cache
-                with TelemetryManager.start_span("deepbag.canonical_cache", {"endpoint": plan.endpoint, "params": json.dumps(plan.params)}) as cache_span:
-                    cached_data = self.cache.get_api_data(plan.endpoint, plan.params, season=plan.season)
-                
-                if cached_data is not None:
-                    yield {"type": "thought", "content": f"Found canonical cache hit for {plan.endpoint}. Skipping upstream NBA API call."}
-                    data = cached_data
-                else:
-                    yield {"type": "tool_call", "tool": "call_nba_api", "params": {"endpoint_name": plan.endpoint, "parameters": plan.params}}
-                    with TelemetryManager.start_span("deepbag.api_dispatch", {"endpoint": plan.endpoint}) as dispatch_span:
-                        data = execute_api_call(plan.endpoint, plan.params)
-                    if not (isinstance(data, dict) and "error" in data):
-                        self.cache.set_api_data(plan.endpoint, plan.params, data, season=plan.season)
-                    yield {"type": "tool_result", "tool": "call_nba_api", "result": self.agent.summarize_result(data) if isinstance(data, dict) else data}
-                
-                # 4. 1-Turn Synthesis
-                for event in self.synthesizer.synthesize(query, data, endpoint_name=plan.endpoint, model_name=model_name):
-                    yield event
-                    if event.get("type") == "final_answer":
-                        final_text = event.get("content", "")
-
-            else:
-                # Agent Fallback
-                from nlp.meta_tools import get_meta_tools_declarations
-                from nlp.sql_tool import get_sql_tool_declaration
-                tools = get_meta_tools_declarations()
-                tools.append(get_sql_tool_declaration())
-                for event in self.agent.run_stream(query, tools, self.endpoint_library, model_name=model_name):
-                    yield event
-                    if event.get("type") == "final_answer":
-                        final_text = event.get("content", "")
-
-            # Save synthesized response to Tier 2 Cache
-            if final_text and not final_text.startswith("Error"):
-                self.cache.set(query, final_text)
-
+            for event in self._process_research_flow(query, model_name=model_name):
+                yield event
         except Exception as e:
-            print(f"Error in hybrid processing: {str(e)}")
+            print(f"Error in research processing: {str(e)}")
             import traceback
             traceback.print_exc()
             yield {"type": "final_answer", "content": f"Error: {str(e)}"}

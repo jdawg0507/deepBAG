@@ -63,9 +63,4 @@ class EndpointToolRetriever:
         scores.sort(key=lambda x: x[0], reverse=True)
         
         top_endpoints = [name for score, name in scores[:top_k] if score > 0]
-        
-        # Fallback if no keywords matched
-        if not top_endpoints:
-            return ["PlayerGameLogs", "LeagueDashPlayerStats"][:top_k]
-            
         return top_endpoints

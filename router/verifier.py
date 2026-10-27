@@ -41,9 +41,22 @@ class CodeVerifier:
                     error_message=f"Endpoint '{ep_name}' is not registered in the Endpoint Catalogue."
                 )
 
-            spec_dict = self.catalogue[ep_name]
+            spec_dict = dict(self.catalogue[ep_name])
+            if "endpoint_name" not in spec_dict:
+                spec_dict["endpoint_name"] = ep_name
+            if "entity_grain" not in spec_dict:
+                spec_dict["entity_grain"] = "player" if ("player_id" in spec_dict.get("parameters", {}) or "player_id" in [p.get("name") for p in spec_dict.get("required_params", [])]) else "league"
+            if "capability_card" not in spec_dict:
+                spec_dict["capability_card"] = spec_dict.get("description", "")
             spec = EndpointSpec.model_validate(spec_dict)
-            join_keys_list.append(set(spec.join_keys))
+            keys = {k.lower() for k in spec.join_keys}
+            if spec.entity_grain == "team":
+                keys.add("team_id")
+            elif spec.entity_grain == "player":
+                keys.add("player_id")
+            elif spec.entity_grain == "league":
+                keys.add("season")
+            join_keys_list.append(keys)
 
             params = call.get("params", {})
             

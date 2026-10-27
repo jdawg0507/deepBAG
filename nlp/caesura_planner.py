@@ -27,7 +27,9 @@ from core.nba_client import NBAClient
 from core.evidence import EvidenceTable
 from core.premise_guard import PremiseGuard
 from api.parameter_utils import get_player_id_from_name
-from nba_api.stats.static import teams, players
+from entities.resolver import EntityResolver
+from router.semantic_index import SemanticEndpointIndex
+from router.intent_parser import IntentParser
 
 logger = logging.getLogger("deepbag.caesura")
 
@@ -36,13 +38,13 @@ Translate the user's NBA query into a strict JSON contract.
 
 JSON Schema fields:
 - "question_type": one of "single", "comparison", "thesis", "definition", "longitudinal", "paradox", "unknown".
-- "entities": list of objects [{"name": "<Full Name or Team Name>", "type": "player"|"team"}]. List ALL mentioned players and teams!
+- "entities": list of objects [{"name": "<Full Name or Team Name>", "type": "player"|"team"}]. List ALL mentioned players and teams! If the user query is a general/macro leaderboard question asking "who was the best", "which players were top", leave "entities": []!
 - "season": "YYYY-YY" string (e.g. "2023-24") or null. If query mentions rookie year or prior season, resolve appropriately. For iconic player seasons (e.g. Westbrook's triple-double MVP season = 2016-17, Curry's unanimous MVP = 2015-16), resolve the milestone season.
 - "season_type": "Regular Season" or "Playoffs". If the query mentions playoffs, postseason, or Finals, you MUST set this to "Playoffs"!
-- "metrics": list of requested metric names (e.g. ["PTS", "AST", "TS%", "on_off_net", "3P%"]).
-- "interpretation": WORDS ONLY: what vague or cultural terms ("gravity", "clutch", "dominant", "midrange paradox") mean in this context. DO NOT include any numerical claims in "interpretation".
+- "metrics": list of requested metric names (e.g. ["PTS", "AST", "TS%", "PPP", "POSS_PCT", "3P%"]).
+- "interpretation": WORDS ONLY: what vague or cultural terms ("gravity", "clutch", "dominant", "midrange paradox", "iso shotmaking") mean in this context. DO NOT include any numerical claims in "interpretation".
 - "filters": object with keys: location, opponent_team_id, outcome, game_segment, period, per_mode, measure_type, last_n_games, date_from, date_to (or null).
-- "clarification_needed": string question ONLY if critical scope is completely missing (e.g. "What adjustments happen after halftime?" with NO player or team named). If players or teams ARE named, DO NOT ask for clarification; instead, make reasonable assumptions in "assumptions" (e.g. "Assumed 2016-17 for Westbrook and 2023-24 for Jokic") and set "clarification_needed": null.
+- "clarification_needed": string question ONLY if critical scope is completely missing and cannot be inferred. For general comparison or leaderboard questions ("who were the best players"), DO NOT ask for clarification; make reasonable assumptions in "assumptions" and set "clarification_needed": null.
 - "assumptions": list of transparent scope decisions made for the user (e.g. ["Assumed Regular Season 2023-24"]).
 
 Return ONLY a valid JSON object matching the contract schema.
@@ -57,15 +59,22 @@ class CaesuraPlanner:
         self.llm = llm_client or UnifiedLLMClient()
         self.catalogue = catalogue or self._load_catalogue()
         self.premise_guard = PremiseGuard()
-        self._all_teams = teams.get_teams()
-        self._team_lookup = {}
-        for t in self._all_teams:
-            self._team_lookup[t["full_name"].lower()] = t["id"]
-            self._team_lookup[t["nickname"].lower()] = t["id"]
-            self._team_lookup[t["abbreviation"].lower()] = t["id"]
+        self.entity_resolver = EntityResolver()
+        self.semantic_index = SemanticEndpointIndex(catalogue_path=os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "endpoint_catalogue_v2.json"
+        ))
+        self.intent_parser = IntentParser(
+            catalogue=self.catalogue,
+            entity_resolver=self.entity_resolver,
+            llm_client=self.llm
+        )
 
     def _load_catalogue(self) -> Dict[str, Any]:
         repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        cat_v2_path = os.path.join(repo_root, "data", "endpoint_catalogue_v2.json")
+        if os.path.exists(cat_v2_path):
+            with open(cat_v2_path, "r", encoding="utf-8") as f:
+                return json.load(f)
         cat_path = os.path.join(repo_root, "data", "endpoint_catalogue.json")
         if os.path.exists(cat_path):
             with open(cat_path, "r", encoding="utf-8") as f:
@@ -73,8 +82,8 @@ class CaesuraPlanner:
         return {}
 
     def extract_intent(self, query: str) -> IntentContract:
-        """Extract schema-validated IntentContract from query with 1-retry on failure and PremiseGuard check"""
-        # 1. PremiseGuard check
+        """Extract schema-validated IntentContract from query using LLM and EntityResolver"""
+        # 1. PremiseGuard check against adversarial traps
         premise_res = self.premise_guard.check_query(query)
         if not premise_res.is_valid:
             return IntentContract(
@@ -94,74 +103,22 @@ class CaesuraPlanner:
                     system_prompt=INTENT_SYSTEM_PROMPT,
                     temperature=0.1
                 )
-                
-                # Check for playoffs in raw query
-                if "playoff" in query.lower() or "finals" in query.lower() or "postseason" in query.lower():
-                    raw_json["season_type"] = "Playoffs"
 
-                # Resolve entities if missing or incomplete
-                if "entities" not in raw_json or not isinstance(raw_json["entities"], list) or len(raw_json["entities"]) == 0:
-                    raw_json["entities"] = []
-                    # Fallback entity scan from text
-                    q_lower = query.lower()
-                    for t_name, tid in self._team_lookup.items():
-                        if re.search(rf"\b{re.escape(t_name)}\b", q_lower):
-                            raw_json["entities"].append({
-                                "name": t_name.title(),
-                                "type": "team",
-                                "id": tid
+                # Resolve extracted entities via EntityResolver
+                resolved_entities_list = []
+                for ent in raw_json.get("entities", []):
+                    if isinstance(ent, dict):
+                        ent_name = ent.get("name", "").strip()
+                        resolved = self.entity_resolver.resolve(ent_name, season_hint=raw_json.get("season"))
+                        if resolved:
+                            resolved_entities_list.append({
+                                "name": resolved.name,
+                                "type": resolved.type,
+                                "id": resolved.id
                             })
-                            break
-                    
-                    # Scan notable players
-                    notable_players = [
-                        ("curry", "Stephen Curry", 201939),
-                        ("steph", "Stephen Curry", 201939),
-                        ("wemby", "Victor Wembanyama", 1641705),
-                        ("wembanyama", "Victor Wembanyama", 1641705),
-                        ("lebron", "LeBron James", 2544),
-                        ("jokic", "Nikola Jokic", 203999),
-                        ("giannis", "Giannis Antetokounmpo", 203507),
-                        ("embiid", "Joel Embiid", 203954),
-                        ("tatum", "Jayson Tatum", 1628369),
-                        ("gobert", "Rudy Gobert", 203497),
-                        ("edwards", "Anthony Edwards", 1630162),
-                        ("ant", "Anthony Edwards", 1630162),
-                        ("chet", "Chet Holmgren", 1631096),
-                    ]
-                    for alias, full_name, pid in notable_players:
-                        if re.search(rf"\b{re.escape(alias)}\b", q_lower):
-                            raw_json["entities"].append({
-                                "name": full_name,
-                                "type": "player",
-                                "id": pid
-                            })
-                else:
-                    for ent in raw_json["entities"]:
-                        if isinstance(ent, dict):
-                            name_clean = ent.get("name", "").strip().lower()
-                            if ent.get("type") == "player" or not ent.get("type"):
-                                p_id = get_player_id_from_name(ent.get("name", ""))
-                                if p_id:
-                                    ent["id"] = p_id
-                                    ent["type"] = "player"
-                            elif ent.get("type") == "team" or name_clean in self._team_lookup:
-                                ent["id"] = self._team_lookup.get(name_clean, ent.get("id"))
-                                ent["type"] = "team"
-                
-                # Auto-resolve player seasons in assumptions if clarification is only asking for season/year
-                if raw_json.get("clarification_needed") and raw_json.get("entities"):
-                    clarif_text = str(raw_json.get("clarification_needed", "")).lower()
-                    if any(w in clarif_text for w in ["season", "year"]):
-                        raw_json["clarification_needed"] = None
-                        if "assumptions" not in raw_json or not isinstance(raw_json["assumptions"], list):
-                            raw_json["assumptions"] = []
-                        if any("westbrook" in str(e.get("name", "")).lower() for e in raw_json.get("entities", [])):
-                            raw_json["assumptions"].append("Assumed 2016-17 for Russell Westbrook's MVP triple-double season.")
-                        if any("jokic" in str(e.get("name", "")).lower() for e in raw_json.get("entities", [])):
-                            raw_json["assumptions"].append("Assumed 2023-24 for Nikola Jokic's triple-double season.")
-                        if not raw_json.get("season"):
-                            raw_json["season"] = "2023-24"
+                        else:
+                            resolved_entities_list.append(ent)
+                raw_json["entities"] = resolved_entities_list
 
                 # Schema validate using Pydantic
                 return IntentContract.model_validate(raw_json)
@@ -171,172 +128,47 @@ class CaesuraPlanner:
                 if attempt == 0:
                     user_prompt += f"\n\nPrevious attempt failed schema validation: {e}. Return strict JSON."
                 else:
-                    # Deterministic fallback
-                    return self._fallback_intent(query)
+                    return IntentContract(
+                        question_type=QuestionType.UNKNOWN,
+                        entities=[],
+                        interpretation="Failed to parse query intent into a valid contract.",
+                        clarification_needed=f"Query intent parsing failed schema validation: {e}. Please specify player/team and metric scope.",
+                        assumptions=[]
+                    )
 
-    def _fallback_intent(self, query: str) -> IntentContract:
-        """Deterministic fallback when LLM JSON fails twice"""
-        assumptions = ["Assumed Regular Season 2023-24 via fallback router."]
-        is_playoff = "playoff" in query.lower() or "finals" in query.lower()
-        
-        entities = []
-        q_lower = query.lower()
-        for t_name, tid in self._team_lookup.items():
-            if re.search(rf"\b{re.escape(t_name)}\b", q_lower):
-                entities.append(EntityRef(name=t_name.title(), type="team", id=tid))
-                break
+    def build_logical_plan(self, intent: IntentContract, query: Optional[str] = None) -> LogicalPlan:
+        """
+        Dynamically constructs an executable CAESURA LogicalPlan using dense vector retrieval
+        and schema-driven LLM compilation. ZERO hardcoded if/elif endpoint switches.
+        """
+        search_query = query or intent.interpretation or "NBA statistics"
+        if intent.metrics:
+            search_query += " " + " ".join(intent.metrics)
+        if intent.entities:
+            search_query += " " + " ".join([e.name for e in intent.entities])
 
-        return IntentContract(
-            question_type=QuestionType.SINGLE,
-            entities=entities,
-            season="2023-24",
-            season_type="Playoffs" if is_playoff else "Regular Season",
-            filters=ScopeFilters(),
-            metrics=["PTS", "AST", "REB"],
-            interpretation="Fallback stat lookup.",
-            assumptions=assumptions
+        # 1. Pure dense vector candidate retrieval
+        retrieval = self.semantic_index.retrieve(search_query, top_k=8)
+        candidate_names = [r["endpoint_name"] for r in retrieval]
+
+        # 2. Compile query plan via LLM using candidate tool schemas
+        query_plan = self.intent_parser.parse_intent(
+            query=search_query,
+            candidate_endpoints=candidate_names
         )
 
-    def build_logical_plan(self, intent: IntentContract) -> LogicalPlan:
-        """
-        CAESURA logical plan DAG generation.
-        Maps intent to multi-endpoint steps based on QuestionType and entities.
-        """
         steps = []
-        season = intent.season or "2023-24"
-        season_type = intent.season_type or "Regular Season"
-        q_type = intent.question_type
-
-        # 1. Thesis Queries (e.g. Knicks/Celtics Playoff Dominance)
-        if q_type == QuestionType.THESIS and not ("gravity" in intent.interpretation.lower() or any("gravity" in m.lower() for m in intent.metrics)):
-            team_id = next((e.id for e in intent.entities if e.type == "team" and e.id), None)
-            if not team_id:
-                for t in self._all_teams:
-                    if t["full_name"].lower() in intent.interpretation.lower() or t["nickname"].lower() in intent.interpretation.lower():
-                        team_id = t["id"]
-                        break
-            if not team_id:
-                team_id = 1610612752  # New York Knicks default
-
-            steps.append(PlanStep(
-                step_id="S1_FourFactors",
-                endpoint="TeamDashboardByGeneralSplits",
-                params={"team_id": team_id, "season": season, "season_type_all_star": season_type, "measure_type_detailed_defense": "Four Factors"},
-                join_keys=["team_id", "season"],
-                description="Team four factors dominance decomposition (eFG%, TOV%, OREB%, FTR)"
-            ))
-            steps.append(PlanStep(
-                step_id="S2_TeamOnOff",
-                endpoint="TeamPlayerOnOffSummary",
-                params={"team_id": team_id, "season": season, "season_type_all_star": season_type},
-                join_keys=["team_id", "season"],
-                description="On/Off net rating differential across playoff rotation"
-            ))
-            steps.append(PlanStep(
-                step_id="S3_TeamSplits",
-                endpoint="TeamDashboardByGeneralSplits",
-                params={"team_id": team_id, "season": season, "season_type_all_star": season_type},
-                join_keys=["team_id"],
-                description="Team general shooting and pace splits"
-            ))
-
-        # 2. Gravity / Definition Queries (Curry vs Wemby Archetype Switch)
-        elif q_type == QuestionType.DEFINITION or "gravity" in intent.interpretation.lower() or any("gravity" in m.lower() for m in intent.metrics) or any(w in intent.interpretation.lower() for w in ["deterrence", "spacing", "gravity"]):
-            player = next((e for e in intent.entities if e.type == "player"), None)
-            if not player:
-                player = EntityRef(name="Stephen Curry", type="player", id=201939)
-            p_id = player.id or 201939
-            
-            # Archetype check: Wemby/Rim vs Curry/Perimeter
-            is_interior = any(w in player.name.lower() for w in ["wemby", "wembanyama", "gobert", "davis", "giannis"])
-            
-            team_id = 1610612744  # Warriors
-            if is_interior:
-                team_id = 1610612759  # Spurs
-            if "gobert" in player.name.lower() or "edwards" in player.name.lower() or "ant" in player.name.lower():
-                team_id = 1610612750  # Timberwolves
-
-            if is_interior:
-                # Interior Rim Deterrence Archetype
+        if query_plan and query_plan.endpoint_calls:
+            for idx, call in enumerate(query_plan.endpoint_calls, 1):
+                spec = self.catalogue.get(call.endpoint, {})
+                join_keys = spec.get("join_keys", ["season"])
                 steps.append(PlanStep(
-                    step_id="S1_PtDefend",
-                    endpoint="PlayerDashPtShotDefend",
-                    params={"player_id": p_id, "season": season, "season_type_all_star": season_type},
-                    join_keys=["player_id"],
-                    description="Opponent rim field goal percentage deterrence"
+                    step_id=f"S{idx}_{call.endpoint}",
+                    endpoint=call.endpoint,
+                    params=call.params,
+                    join_keys=join_keys,
+                    description=f"Execute {call.endpoint} for {call.entity_label or 'league'}"
                 ))
-            else:
-                # Perimeter Spacing & Pull Archetype
-                steps.append(PlanStep(
-                    step_id="S1_PtShots",
-                    endpoint="PlayerDashPtShots",
-                    params={"player_id": p_id, "season": season, "season_type_all_star": season_type},
-                    join_keys=["player_id"],
-                    description="Perimeter pull-up and catch-and-shoot distribution"
-                ))
-                
-            steps.append(PlanStep(
-                step_id="S2_OnOffSummary",
-                endpoint="TeamPlayerOnOffSummary",
-                params={"team_id": team_id, "season": season},
-                join_keys=["team_id"],
-                description="Teammate offensive/defensive rating spacing uplift on vs off"
-            ))
-
-        # 3. Longitudinal / Halftime Adjustments
-        elif q_type == QuestionType.LONGITUDINAL or "halftime" in intent.interpretation.lower():
-            team_id = next((e.id for e in intent.entities if e.type == "team" and e.id), 1610612752)
-            steps.append(PlanStep(
-                step_id="S1_FirstHalf",
-                endpoint="TeamPlayerOnOffDetails",
-                params={"team_id": team_id, "season": season, "game_segment_nullable": "First Half"},
-                join_keys=["team_id"],
-                description="First half team rating baseline"
-            ))
-            steps.append(PlanStep(
-                step_id="S2_SecondHalf",
-                endpoint="TeamPlayerOnOffDetails",
-                params={"team_id": team_id, "season": season, "game_segment_nullable": "Second Half"},
-                join_keys=["team_id"],
-                description="Second half team rating adjustment split"
-            ))
-
-        # 4. Paradox (Midrange)
-        elif q_type == QuestionType.PARADOX or "midrange" in intent.interpretation.lower():
-            steps.append(PlanStep(
-                step_id="S1_ShotLocations",
-                endpoint="LeagueDashPlayerShotLocations",
-                params={"season": season, "season_type_all_star": season_type, "per_mode_detailed": "PerGame"},
-                join_keys=["season"],
-                description="League-wide shot zone efficiency conditioned by player volume"
-            ))
-
-        # 5. Multi-player Comparison
-        elif q_type == QuestionType.COMPARISON:
-            players_list = [e for e in intent.entities if e.type == "player"]
-            if not players_list:
-                players_list = intent.entities
-            for idx, ent in enumerate(players_list, 1):
-                p_id = ent.id or 2544
-                clean_name = ent.name.replace(" ", "_")
-                steps.append(PlanStep(
-                    step_id=f"S{idx}_{clean_name}",
-                    endpoint="PlayerGameLog",
-                    params={"player_id": p_id, "season": season, "season_type_all_star": season_type},
-                    join_keys=["player_id", "season"],
-                    description=f"Season game logs for {ent.name}"
-                ))
-
-        # 6. Default Single Player
-        else:
-            p_id = intent.entities[0].id if intent.entities and intent.entities[0].id else 2544
-            steps.append(PlanStep(
-                step_id="S1_SingleLog",
-                endpoint="PlayerGameLog",
-                params={"player_id": p_id, "season": season, "season_type_all_star": season_type},
-                join_keys=["player_id", "season"],
-                description="Player season game log"
-            ))
 
         return LogicalPlan(
             intent=intent,

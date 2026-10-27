@@ -1,0 +1,414 @@
+[
+  {
+    "id": "pilot_01",
+    "category": "single_filtered",
+    "canonical_query": "Tyrese Haliburton assists during the 2023-24 In-Season Tournament",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2023-24",
+    "entities": [
+      "Tyrese Haliburton"
+    ],
+    "ground_truth": {
+      "metric": "AST",
+      "filter": "Tournament",
+      "is_trap": false
+    },
+    "paraphrases": [
+      "What were Tyrese Haliburton's AST numbers during the 2023-24 season (In-Season Tournament)?",
+      "Show me Tyrese Haliburton In-Season Tournament AST stats back in 2023-24",
+      "Tyrese Haliburton 2023-24 In-Season Tournament AST",
+      "How did Tyrese Haliburton perform in 2023-24 when looking at In-Season Tournament for AST?"
+    ]
+  },
+  {
+    "id": "pilot_02",
+    "category": "single_filtered",
+    "canonical_query": "Jalen Brunson playoff points per game in 2023-24",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2023-24",
+    "entities": [
+      "Jalen Brunson"
+    ],
+    "ground_truth": {
+      "metric": "PTS",
+      "filter": "Playoffs",
+      "is_trap": false
+    },
+    "paraphrases": [
+      "What were Jalen Brunson's PTS numbers during the 2023-24 season (Playoffs)?",
+      "Show me Jalen Brunson Playoffs PTS stats back in 2023-24",
+      "Jalen Brunson 2023-24 Playoffs PTS",
+      "How did Jalen Brunson perform in 2023-24 when looking at Playoffs for PTS?"
+    ]
+  },
+  {
+    "id": "pilot_03",
+    "category": "single_filtered",
+    "canonical_query": "Bam Adebayo rebounds against the Boston Celtics in 2022-23",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2022-23",
+    "entities": [
+      "Bam Adebayo"
+    ],
+    "ground_truth": {
+      "metric": "REB",
+      "filter": "vs Celtics",
+      "is_trap": false
+    },
+    "paraphrases": [
+      "What were Bam Adebayo's REB numbers during the 2022-23 season (vs Celtics)?",
+      "Show me Bam Adebayo vs Celtics REB stats back in 2022-23",
+      "Bam Adebayo 2022-23 vs Celtics REB",
+      "How did Bam Adebayo perform in 2022-23 when looking at vs Celtics for REB?"
+    ]
+  },
+  {
+    "id": "pilot_04",
+    "category": "single_filtered",
+    "canonical_query": "De'Aaron Fox clutch steals in 2023-24",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2023-24",
+    "entities": [
+      "De'Aaron Fox"
+    ],
+    "ground_truth": {
+      "metric": "STL",
+      "filter": "Clutch",
+      "is_trap": false
+    },
+    "paraphrases": [
+      "What were De'Aaron Fox's STL numbers during the 2023-24 season (Clutch)?",
+      "Show me De'Aaron Fox Clutch STL stats back in 2023-24",
+      "De'Aaron Fox 2023-24 Clutch STL",
+      "How did De'Aaron Fox perform in 2023-24 when looking at Clutch for STL?"
+    ]
+  },
+  {
+    "id": "pilot_05",
+    "category": "multi_comparison",
+    "canonical_query": "Compare Domantas Sabonis and Anthony Davis rebounds in 2023-24",
+    "expected_endpoint": "Multiple",
+    "expected_season": "2023-24",
+    "entities": [
+      "Domantas Sabonis",
+      "Anthony Davis"
+    ],
+    "ground_truth": {
+      "metric": "REB",
+      "is_trap": false
+    },
+    "paraphrases": [
+      "Please provide a comparison of Domantas Sabonis and Anthony Davis in terms of REB for 2023-24.",
+      "Who had better REB in 2023-24, Domantas Sabonis or Anthony Davis?",
+      "Domantas Sabonis vs Anthony Davis REB 2023-24",
+      "Compare REB numbers between Domantas Sabonis and Anthony Davis throughout 2023-24."
+    ]
+  },
+  {
+    "id": "pilot_06",
+    "category": "multi_comparison",
+    "canonical_query": "Compare Trae Young and Dejounte Murray assists per game in 2022-23",
+    "expected_endpoint": "Multiple",
+    "expected_season": "2022-23",
+    "entities": [
+      "Trae Young",
+      "Dejounte Murray"
+    ],
+    "ground_truth": {
+      "metric": "AST",
+      "is_trap": false
+    },
+    "paraphrases": [
+      "Please provide a comparison of Trae Young and Dejounte Murray in terms of AST for 2022-23.",
+      "Who had better AST in 2022-23, Trae Young or Dejounte Murray?",
+      "Trae Young vs Dejounte Murray AST 2022-23",
+      "Compare AST numbers between Trae Young and Dejounte Murray throughout 2022-23."
+    ]
+  },
+  {
+    "id": "pilot_07",
+    "category": "multi_comparison",
+    "canonical_query": "Kyrie Irving vs Luka Doncic 3P% in 2023-24",
+    "expected_endpoint": "Multiple",
+    "expected_season": "2023-24",
+    "entities": [
+      "Kyrie Irving",
+      "Luka Doncic"
+    ],
+    "ground_truth": {
+      "metric": "3P%",
+      "is_trap": false
+    },
+    "paraphrases": [
+      "Please provide a comparison of Kyrie Irving and Luka Doncic in terms of 3P% for 2023-24.",
+      "Who had better 3P% in 2023-24, Kyrie Irving or Luka Doncic?",
+      "Kyrie Irving vs Luka Doncic 3P% 2023-24",
+      "Compare 3P% numbers between Kyrie Irving and Luka Doncic throughout 2023-24."
+    ]
+  },
+  {
+    "id": "pilot_08",
+    "category": "multi_comparison",
+    "canonical_query": "Paolo Banchero vs Franz Wagner scoring in 2023-24",
+    "expected_endpoint": "Multiple",
+    "expected_season": "2023-24",
+    "entities": [
+      "Paolo Banchero",
+      "Franz Wagner"
+    ],
+    "ground_truth": {
+      "metric": "PTS",
+      "is_trap": false
+    },
+    "paraphrases": [
+      "Please provide a comparison of Paolo Banchero and Franz Wagner in terms of PTS for 2023-24.",
+      "Who had better PTS in 2023-24, Paolo Banchero or Franz Wagner?",
+      "Paolo Banchero vs Franz Wagner PTS 2023-24",
+      "Compare PTS numbers between Paolo Banchero and Franz Wagner throughout 2023-24."
+    ]
+  },
+  {
+    "id": "pilot_09",
+    "category": "relative_temporal",
+    "canonical_query": "Paolo Banchero points in his rookie year",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2022-23",
+    "entities": [
+      "Paolo Banchero"
+    ],
+    "ground_truth": {
+      "expected_season": "2022-23",
+      "is_trap": false
+    },
+    "paraphrases": [
+      "What were Paolo Banchero's PTS averages during his rookie year?",
+      "How many PTS did Paolo Banchero put up as a rookie?",
+      "Paolo Banchero rookie year PTS stats",
+      "Can you pull up Paolo Banchero's PTS production in his rookie year year?"
+    ]
+  },
+  {
+    "id": "pilot_10",
+    "category": "relative_temporal",
+    "canonical_query": "Chet Holmgren blocks in his rookie season",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2023-24",
+    "entities": [
+      "Chet Holmgren"
+    ],
+    "ground_truth": {
+      "expected_season": "2023-24",
+      "is_trap": false
+    },
+    "paraphrases": [
+      "What were Chet Holmgren's BLK averages during his rookie season?",
+      "How many BLK did Chet Holmgren put up as a rookie?",
+      "Chet Holmgren rookie season BLK stats",
+      "Can you pull up Chet Holmgren's BLK production in his rookie season year?"
+    ]
+  },
+  {
+    "id": "pilot_11",
+    "category": "relative_temporal",
+    "canonical_query": "Scottie Barnes rebounds in his rookie year",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2021-22",
+    "entities": [
+      "Scottie Barnes"
+    ],
+    "ground_truth": {
+      "expected_season": "2021-22",
+      "is_trap": false
+    },
+    "paraphrases": [
+      "What were Scottie Barnes's REB averages during his rookie year?",
+      "How many REB did Scottie Barnes put up as a rookie?",
+      "Scottie Barnes rookie year REB stats",
+      "Can you pull up Scottie Barnes's REB production in his rookie year year?"
+    ]
+  },
+  {
+    "id": "pilot_12",
+    "category": "relative_temporal",
+    "canonical_query": "Tyrese Maxey scoring in his rookie year",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2020-21",
+    "entities": [
+      "Tyrese Maxey"
+    ],
+    "ground_truth": {
+      "expected_season": "2020-21",
+      "is_trap": false
+    },
+    "paraphrases": [
+      "What were Tyrese Maxey's PTS averages during his rookie year?",
+      "How many PTS did Tyrese Maxey put up as a rookie?",
+      "Tyrese Maxey rookie year PTS stats",
+      "Can you pull up Tyrese Maxey's PTS production in his rookie year year?"
+    ]
+  },
+  {
+    "id": "pilot_13",
+    "category": "historical_era",
+    "canonical_query": "Tim Duncan playoff blocks in 2002-03",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2002-03",
+    "entities": [
+      "Tim Duncan"
+    ],
+    "ground_truth": {
+      "season": "2002-03",
+      "is_trap": false
+    },
+    "paraphrases": [
+      "What were Tim Duncan's BLK stats in 2002-03?",
+      "Show me Tim Duncan 2002-03 BLK numbers",
+      "Tim Duncan 2002-03 BLK breakdown",
+      "How many BLK did Tim Duncan average in 2002-03?"
+    ]
+  },
+  {
+    "id": "pilot_14",
+    "category": "historical_era",
+    "canonical_query": "Patrick Ewing points per game in 1989-90",
+    "expected_endpoint": "historical_sql",
+    "expected_season": "1989-90",
+    "entities": [
+      "Patrick Ewing"
+    ],
+    "ground_truth": {
+      "season": "1989-90",
+      "is_trap": false
+    },
+    "paraphrases": [
+      "What were Patrick Ewing's PTS stats in 1989-90?",
+      "Show me Patrick Ewing 1989-90 PTS numbers",
+      "Patrick Ewing 1989-90 PTS breakdown",
+      "How many PTS did Patrick Ewing average in 1989-90?"
+    ]
+  },
+  {
+    "id": "pilot_15",
+    "category": "historical_era",
+    "canonical_query": "Isiah Thomas assists per game in 1984-85",
+    "expected_endpoint": "historical_sql",
+    "expected_season": "1984-85",
+    "entities": [
+      "Isiah Thomas"
+    ],
+    "ground_truth": {
+      "season": "1984-85",
+      "is_trap": false
+    },
+    "paraphrases": [
+      "What were Isiah Thomas's AST stats in 1984-85?",
+      "Show me Isiah Thomas 1984-85 AST numbers",
+      "Isiah Thomas 1984-85 AST breakdown",
+      "How many AST did Isiah Thomas average in 1984-85?"
+    ]
+  },
+  {
+    "id": "pilot_16",
+    "category": "historical_era",
+    "canonical_query": "Dirk Nowitzki Finals scoring in 2010-11",
+    "expected_endpoint": "PlayerGameLog",
+    "expected_season": "2010-11",
+    "entities": [
+      "Dirk Nowitzki"
+    ],
+    "ground_truth": {
+      "season": "2010-11",
+      "is_trap": false
+    },
+    "paraphrases": [
+      "What were Dirk Nowitzki's PTS stats in 2010-11?",
+      "Show me Dirk Nowitzki 2010-11 PTS numbers",
+      "Dirk Nowitzki 2010-11 PTS breakdown",
+      "How many PTS did Dirk Nowitzki average in 2010-11?"
+    ]
+  },
+  {
+    "id": "pilot_17",
+    "category": "trap_premise",
+    "canonical_query": "How many points did LeBron James score for the Boston Celtics in 2011-12?",
+    "expected_endpoint": "premise_correction",
+    "expected_season": "2011-12",
+    "entities": [
+      "LeBron James"
+    ],
+    "ground_truth": {
+      "is_trap": true,
+      "trap_type": "wrong_team",
+      "explanation": "LeBron James played for the Miami Heat in 2011-12, never for the Boston Celtics."
+    },
+    "paraphrases": [
+      "How many points did LeBron James score for the Boston Celtics in 2011-12?",
+      "What were LeBron James's 2011-12 stats while playing on the Boston Celtics?",
+      "LeBron James Boston Celtics stats 2011-12",
+      "Can you give me LeBron James's 2011-12 scoring breakdown with the Boston Celtics?"
+    ]
+  },
+  {
+    "id": "pilot_18",
+    "category": "trap_premise",
+    "canonical_query": "What were Stephen Curry's stats in the 1998-99 NBA season?",
+    "expected_endpoint": "premise_correction",
+    "expected_season": "1998-99",
+    "entities": [
+      "Stephen Curry"
+    ],
+    "ground_truth": {
+      "is_trap": true,
+      "trap_type": "pre_career",
+      "explanation": "Stephen Curry was born in 1988 and entered the NBA in 2009-10; he did not play in 1998-99."
+    },
+    "paraphrases": [
+      "What were Stephen Curry's stats in the 1998-99 NBA season?",
+      "How many points did Stephen Curry average back in 1998-99?",
+      "Stephen Curry 1998-99 regular season numbers",
+      "Pull up Stephen Curry's NBA box score logs for 1998-99"
+    ]
+  },
+  {
+    "id": "pilot_19",
+    "category": "trap_premise",
+    "canonical_query": "Michael Jordan three-pointers made in the 2015-16 season",
+    "expected_endpoint": "premise_correction",
+    "expected_season": "2015-16",
+    "entities": [
+      "Michael Jordan"
+    ],
+    "ground_truth": {
+      "is_trap": true,
+      "trap_type": "post_career",
+      "explanation": "Michael Jordan retired permanently after the 2002-03 season and did not play in 2015-16."
+    },
+    "paraphrases": [
+      "Michael Jordan three-pointers made in the 2015-16 season",
+      "How many 3-pointers did Michael Jordan hit during 2015-16?",
+      "Michael Jordan 2015-16 three point shooting stats",
+      "Can you find Michael Jordan's three point percentage in 2015-16?"
+    ]
+  },
+  {
+    "id": "pilot_20",
+    "category": "trap_premise",
+    "canonical_query": "Victor Wembanyama playoff stats in 2021-22",
+    "expected_endpoint": "premise_correction",
+    "expected_season": "2021-22",
+    "entities": [
+      "Victor Wembanyama"
+    ],
+    "ground_truth": {
+      "is_trap": true,
+      "trap_type": "pre_career",
+      "explanation": "Victor Wembanyama was drafted in 2023 and played his rookie NBA season in 2023-24."
+    },
+    "paraphrases": [
+      "What were Victor Wembanyama's stats in the 2021-22 NBA season?",
+      "How many points did Victor Wembanyama average back in 2021-22?",
+      "Victor Wembanyama 2021-22 regular season numbers",
+      "Pull up Victor Wembanyama's NBA box score logs for 2021-22"
+    ]
+  }
+]

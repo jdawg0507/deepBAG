@@ -88,13 +88,26 @@ class UnifiedLLMClient:
                     messages.append({"role": "system", "content": system_prompt})
                 messages.append({"role": "user", "content": user_prompt})
                 
-                response = self.client.chat.completions.create(
-                    model=target_model,
-                    messages=messages,
-                    temperature=temperature,
-                )
-                text = response.choices[0].message.content or ""
-                return text.strip()
+                try:
+                    response = self.client.chat.completions.create(
+                        model=target_model,
+                        messages=messages,
+                        temperature=temperature,
+                    )
+                    text = response.choices[0].message.content or ""
+                    return text.strip()
+                except Exception as e:
+                    if self.gemini_key and ("overload" in str(e).lower() or "529" in str(e) or "503" in str(e)):
+                        logger.warning(f"Nebius service overloaded ({e}). Failing over to Gemini for this step.")
+                        import google.generativeai as genai
+                        genai.configure(api_key=self.gemini_key, transport="rest")
+                        gemini_model = genai.GenerativeModel(
+                            model_name=os.environ.get("GEMINI_MODEL", "gemini-2.5-flash"),
+                            system_instruction=system_prompt if system_prompt else None,
+                        )
+                        res = gemini_model.generate_content(user_prompt)
+                        return (res.text or "").strip()
+                    raise
                 
             elif self.provider == "gemini":
                 import google.generativeai as genai

@@ -58,7 +58,7 @@ JSON Output Schema:
       "params": {
         "<param_name>": "<param_value>"
       },
-      "entity_label": "<Player or Team Name>"
+      "entity_label": "<Player or Team Name or null for league-wide>"
     }
   ],
   "reasoning": "<Short analytical rationale for endpoint selection>"
@@ -70,7 +70,9 @@ RULES:
 3. Set season_type to "Playoffs" if query mentions playoffs, postseason, or Finals.
 4. When a query asks about a player's performance against an opponent team (e.g. 'vs Celtics'), query the player's endpoint (e.g. PlayerGameLog) with the player; do NOT emit an unjoinable team endpoint call.
 5. Prefer PlayerGameLog for individual player game performances, matchups, and game-level splits.
-6. Output valid JSON only.
+6. Use Optional Params (e.g. play_type_nullable='Isolation', player_or_team_abbreviation='P', game_segment_nullable='Second Half') whenever relevant to satisfy the user's specific analytic scope. Allowed values are strictly provided in each endpoint card.
+7. For open-ended or league-wide queries ("who were the best players", "which teams"), leave entities_raw as [] and use league-wide endpoints (or set player_or_team_abbreviation='P' on SynergyPlayTypes). Do NOT ask for clarification if a league-wide query can be answered via league endpoints.
+8. Output valid JSON only.
 """
 
 class IntentParser:
@@ -110,15 +112,35 @@ class IntentParser:
         if not candidate_endpoints:
             retrieval = self.semantic_index.retrieve(query, top_k=5)
             candidate_endpoints = [r["endpoint_name"] for r in retrieval]
-        # 1. Format candidate endpoint summaries
+        # 1. Format candidate endpoint summaries with required, optional, and output fields
         cand_summaries = []
         for name in candidate_endpoints:
             spec = self.catalogue.get(name, {})
             req_params = [p.get("name") for p in spec.get("required_params", [])]
+            
+            # Format optional parameters with allowed values / enums
+            opt_params_formatted = []
+            for opt in spec.get("optional_params", []):
+                p_name = opt.get("name")
+                allowed = opt.get("allowed_values")
+                default_val = opt.get("default")
+                if allowed:
+                    opt_params_formatted.append(f"{p_name} (default: {default_val}, allowed: {allowed})")
+                else:
+                    opt_params_formatted.append(f"{p_name} (default: {default_val})")
+            
+            # Format return fields
+            output_fields = spec.get("output_fields", [])
+            fields_clean = [f["name"] if isinstance(f, dict) else str(f) for f in output_fields[:20]]
+            output_fields_str = ", ".join(fields_clean) + ("..." if len(output_fields) > 20 else "") if fields_clean else "N/A"
+
             cand_summaries.append(
                 f"- Endpoint: {name}\n"
+                f"  Grain: {spec.get('entity_grain', 'league')}\n"
                 f"  Capability: {spec.get('capability_card', '')}\n"
-                f"  Required Params: {req_params}"
+                f"  Required Params: {req_params}\n"
+                f"  Optional Params: {opt_params_formatted}\n"
+                f"  Return Fields: {output_fields_str}"
             )
 
         candidate_block = "\n\n".join(cand_summaries)
@@ -181,38 +203,76 @@ Candidate Endpoints (You MUST select from this pool):
             query=raw_plan.get("temporal_expression") or query,
             player_from_year=first_player_from
         )
-        resolved_season = temporal_info["season"]
-        season_type = raw_plan.get("season_type", "Regular Season")
-
-        # Scope Receipt construction
+        resolved_season = temporal_info.get("season")
         assumptions = []
-        if temporal_info.get("is_assumed") and temporal_info.get("assumption_text"):
+
+        if temporal_info.get("is_assumed") and players_meta and resolved_season:
+            latest_to_year = min(p.to_year for p in players_meta)
+            try:
+                season_start = int(resolved_season.split("-")[0])
+                if season_start >= latest_to_year:
+                    clamped_start = latest_to_year - 1
+                    resolved_season = f"{clamped_start}-{str(latest_to_year)[-2:]}"
+                    assumptions.append(f"Defaulted to latest active season {resolved_season} within career bounds.")
+                elif temporal_info.get("assumption_text"):
+                    assumptions.append(temporal_info["assumption_text"])
+            except Exception:
+                if temporal_info.get("assumption_text"):
+                    assumptions.append(temporal_info["assumption_text"])
+        elif temporal_info.get("is_assumed") and temporal_info.get("assumption_text"):
             assumptions.append(temporal_info["assumption_text"])
+
+        season_type = raw_plan.get("season_type") or "Regular Season"
 
         scope_receipt = ScopeReceipt(
             season=resolved_season,
             season_type=season_type,
+            date=temporal_info.get("date"),
+            timeframe=temporal_info.get("timeframe"),
             entities=[{"name": e.name, "id": e.id, "type": e.type} for e in resolved_entities],
             assumptions=assumptions
         )
 
-        # Build endpoint calls
+        # Build endpoint calls with schema-aware ParameterAutoBinder
         calls: List[EndpointCallPlan] = []
         for c in raw_plan.get("endpoint_calls", []):
             ep_name = c.get("endpoint")
-            params = c.get("params", {})
-            if "season" not in params:
-                params["season"] = resolved_season
-            if "season_type_all_star" not in params and "season_type" in c:
-                params["season_type_all_star"] = season_type
+            if not ep_name or ep_name not in self.catalogue:
+                continue
+            spec = self.catalogue[ep_name]
+            all_param_names = [p.get("name") for p in spec.get("required_params", []) + spec.get("optional_params", [])]
+            params = dict(c.get("params", {}))
 
-            # Inject resolved player_id / team_id if missing
-            if resolved_entities:
+            # Season binding
+            for s_key in ("season", "season_nullable"):
+                if s_key in all_param_names and s_key not in params:
+                    params[s_key] = resolved_season
+
+            # Season type binding
+            for st_key in ("season_type_all_star", "season_type_playoffs", "season_type_nullable"):
+                if st_key in all_param_names and st_key not in params:
+                    params[st_key] = season_type
+
+            # Synergy player/team grain binding
+            if "player_or_team_abbreviation" in all_param_names and "player_or_team_abbreviation" not in params:
+                has_team_only = resolved_entities and all(e.type == "team" for e in resolved_entities)
+                params["player_or_team_abbreviation"] = "T" if has_team_only else "P"
+
+            # Entity ID binding (only if endpoint accepts entity ID)
+            label = c.get("entity_label")
+            matched_ent = None
+            if label and resolved_entities:
                 for ent in resolved_entities:
-                    if ent.type == "player" and "player_id" not in params:
-                        params["player_id"] = ent.id
-                    elif ent.type == "team" and "team_id" not in params:
-                        params["team_id"] = ent.id
+                    if ent.name.lower() in label.lower() or label.lower() in ent.name.lower():
+                        matched_ent = ent
+                        break
+
+            target_ent = matched_ent or (resolved_entities[0] if len(resolved_entities) == 1 else None)
+            if target_ent:
+                if target_ent.type == "player" and "player_id" in all_param_names:
+                    params["player_id"] = target_ent.id
+                elif target_ent.type == "team" and "team_id" in all_param_names:
+                    params["team_id"] = target_ent.id
 
             calls.append(EndpointCallPlan(
                 endpoint=ep_name,

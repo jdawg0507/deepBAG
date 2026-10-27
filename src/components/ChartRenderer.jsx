@@ -13,8 +13,9 @@ import {
   Legend,
   Filler,
 } from 'chart.js';
-import { Bar, Line, Radar, Doughnut } from 'react-chartjs-2';
-import { BarChart3, LineChart, PieChart, Table as TableIcon } from 'lucide-react';
+import { Bar, Line, Radar, Doughnut, Scatter, Bubble } from 'react-chartjs-2';
+import { BarChart3, LineChart, PieChart, Table as TableIcon, ScatterChart as ScatterIcon, Share2 } from 'lucide-react';
+import { NetworkGraph } from './NetworkGraph';
 
 // Register Chart.js components
 ChartJS.register(
@@ -43,6 +44,11 @@ const PALETTE = [
 export function ChartRenderer({ config }) {
   const [showTable, setShowTable] = useState(false);
 
+  // If configuration represents a Node-Link Network Graph, delegate immediately
+  if (config && (config.type === 'network' || config.type === 'graph' || Array.isArray(config.nodes))) {
+    return <NetworkGraph config={config} />;
+  }
+
   const { chartData, options, chartType } = useMemo(() => {
     if (!config || !config.data) {
       return { chartData: null, options: {}, chartType: 'bar' };
@@ -55,16 +61,17 @@ export function ChartRenderer({ config }) {
       const color = PALETTE[idx % PALETTE.length];
       const isLine = type === 'line';
       const isRadar = type === 'radar';
+      const isScatter = type === 'scatter' || type === 'bubble';
 
       return {
         ...ds,
         backgroundColor: ds.backgroundColor || (isLine ? 'rgba(59, 130, 246, 0.15)' : color.bg),
         borderColor: ds.borderColor || color.border,
         borderWidth: ds.borderWidth || (isLine ? 3 : 1.5),
-        pointBackgroundColor: color.border,
+        pointBackgroundColor: ds.pointBackgroundColor || color.border,
         pointBorderColor: '#ffffff',
-        pointRadius: isLine || isRadar ? 4 : undefined,
-        pointHoverRadius: 6,
+        pointRadius: isLine || isRadar ? 4 : (isScatter ? 6 : undefined),
+        pointHoverRadius: isScatter ? 9 : 6,
         tension: isLine ? 0.35 : undefined,
         fill: isLine,
       };
@@ -75,7 +82,7 @@ export function ChartRenderer({ config }) {
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          display: config.data.datasets && config.data.datasets.length > 1,
+          display: Boolean(config.data.datasets && config.data.datasets.length > 1),
           position: 'top',
           labels: {
             color: '#cbd5e1',
@@ -98,26 +105,42 @@ export function ChartRenderer({ config }) {
           borderColor: 'rgba(255, 255, 255, 0.12)',
           borderWidth: 1,
           padding: 10,
-          cornerRadius: 8,
           boxPadding: 4,
           usePointStyle: true,
+          callbacks: {
+            label: function (context) {
+              if (type === 'scatter' || type === 'bubble') {
+                const raw = context.raw || {};
+                const label = raw.label || context.dataset.label || '';
+                return `${label ? label + ': ' : ''}(x: ${raw.x}, y: ${raw.y}${raw.r ? ', size: ' + raw.r : ''})`;
+              }
+              const label = context.dataset.label || '';
+              const value = context.parsed.y !== undefined ? context.parsed.y : context.parsed;
+              return `${label ? label + ': ' : ''}${value}`;
+            },
+          },
         },
       },
-      scales: type === 'radar' ? {
-        r: {
-          grid: { color: 'rgba(255, 255, 255, 0.08)' },
-          angleLines: { color: 'rgba(255, 255, 255, 0.08)' },
-          pointLabels: { color: '#94a3b8', font: { family: 'Inter', size: 11 } },
-          ticks: { backdropColor: 'transparent', color: '#64748b' },
-        }
-      } : {
+      scales: type === 'radar' || type === 'doughnut' || type === 'pie' ? undefined : {
         x: {
-          grid: { color: 'rgba(255, 255, 255, 0.06)' },
+          grid: { color: 'rgba(255, 255, 255, 0.05)' },
           ticks: { color: '#94a3b8', font: { family: 'Inter', size: 11 } },
+          title: config.options?.scales?.x?.title ? {
+            display: true,
+            text: config.options.scales.x.title.text,
+            color: '#94a3b8',
+            font: { family: 'Inter', size: 12, weight: '500' }
+          } : undefined
         },
         y: {
-          grid: { color: 'rgba(255, 255, 255, 0.06)' },
+          grid: { color: 'rgba(255, 255, 255, 0.05)' },
           ticks: { color: '#94a3b8', font: { family: 'Inter', size: 11 } },
+          title: config.options?.scales?.y?.title ? {
+            display: true,
+            text: config.options.scales.y.title.text,
+            color: '#94a3b8',
+            font: { family: 'Inter', size: 12, weight: '500' }
+          } : undefined
         },
       },
     };
@@ -151,6 +174,10 @@ export function ChartRenderer({ config }) {
       case 'doughnut':
       case 'pie':
         return <Doughnut data={chartData} options={options} />;
+      case 'scatter':
+        return <Scatter data={chartData} options={options} />;
+      case 'bubble':
+        return <Bubble data={chartData} options={options} />;
       case 'bar':
       default:
         return <Bar data={chartData} options={options} />;
@@ -167,7 +194,8 @@ export function ChartRenderer({ config }) {
           {chartType === 'line' && <LineChart size={16} className="chart-icon" />}
           {chartType === 'bar' && <BarChart3 size={16} className="chart-icon" />}
           {chartType === 'radar' && <PieChart size={16} className="chart-icon" />}
-          <span>{config.title || (config.options?.plugins?.title?.text) || 'NBA Statistics Visualization'}</span>
+          {(chartType === 'scatter' || chartType === 'bubble') && <ScatterIcon size={16} className="chart-icon" />}
+          <span>{config.title || (config.options?.plugins?.title?.text) || 'Statistical Visualization'}</span>
         </div>
         <button
           className="chart-toggle-btn"
@@ -185,21 +213,31 @@ export function ChartRenderer({ config }) {
             <table className="chart-data-table">
               <thead>
                 <tr>
-                  <th>Category</th>
+                  <th>Category / Point</th>
                   {datasets.map((ds, i) => (
                     <th key={i}>{ds.label || `Metric ${i + 1}`}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {labels.map((label, rowIdx) => (
+                {labels.length > 0 ? labels.map((label, rowIdx) => (
                   <tr key={rowIdx}>
                     <td><strong>{label}</strong></td>
                     {datasets.map((ds, colIdx) => (
                       <td key={colIdx}>{ds.data?.[rowIdx] ?? '-'}</td>
                     ))}
                   </tr>
-                ))}
+                )) : (
+                  // For scatter or bubble datasets where data is array of objects {x, y}
+                  datasets[0]?.data?.map((pt, ptIdx) => (
+                    <tr key={ptIdx}>
+                      <td><strong>{pt.label || `Point ${ptIdx + 1}`}</strong></td>
+                      {datasets.map((ds, dsIdx) => (
+                        <td key={dsIdx}>{JSON.stringify(ds.data?.[ptIdx])}</td>
+                      ))}
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

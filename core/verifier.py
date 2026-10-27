@@ -33,10 +33,12 @@ class SynthesisVerifier:
         self.allowlist = set(allowlisted_numbers or ALLOWLISTED_INTEGERS)
 
     def extract_numerals(self, text: str) -> List[str]:
-        """Extract all raw numerals and percentages from text"""
+        """Extract all raw numerals and percentages from prose text, excluding chart/graph code blocks"""
+        # Strip chart, graph, and svg code blocks so declarative visual configs are not audited as bare prose numbers
+        clean_text = re.sub(r'```(?:chartjs|chart|graph|network|svg|json:chart)[\s\S]*?```', '', text)
         # Match integers, floating points, percentages
         pattern = r'\b\d+(?:\.\d+)?%?\b'
-        matches = re.findall(pattern, text)
+        matches = re.findall(pattern, clean_text)
         cleaned = []
         for m in matches:
             val = m.replace("%", "").strip()

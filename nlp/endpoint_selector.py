@@ -71,11 +71,11 @@ class EndpointSelector:
                     print("Found new parameters, exploring further...")
                     return self.identify_endpoints(query, new_params, depth + 1, max_depth)
                 
-            return fallback_endpoints if fallback_endpoints else ["PlayerGameLog"]
+            return fallback_endpoints
             
         except Exception as e:
             print(f"Error in endpoint exploration: {str(e)}")
-            return ["PlayerGameLog"] if "player_id" in extracted_params else ["LeagueDashPlayerStats"]
+            return []
     
     def _can_use_endpoint(self, endpoint, params):
         """Check if we can use an endpoint with current parameters"""
@@ -98,7 +98,7 @@ class EndpointSelector:
         {json.dumps(self.explored_data, indent=2)}
         
         Endpoint requirements:
-        {json.dumps(self.endpoint_library[endpoint], indent=2)}
+        {json.dumps(self.endpoint_library.get(endpoint, {}), indent=2)}
         
         Return a JSON object with only the parameters needed for this specific endpoint call.
         """
@@ -124,29 +124,25 @@ class EndpointSelector:
         
         # Handle player_id specifically if it's missing
         if "player_id" in missing_params:
-            from api.parameter_utils import get_player_id_from_name
-            player_name = None
+            from entities.resolver import EntityResolver
+            resolver = EntityResolver()
+            player_name = extracted_params.get("Player")
             
-            # Try to get player name from extracted params
-            if "Player" in extracted_params:
-                player_name = extracted_params["Player"]
-            
-            # If not found, try to extract from query
-            if not player_name:
-                # Check for common player names in query
-                common_players = ["lebron", "james", "curry", "durant", "giannis", "luka", "jokic"]
-                for name in common_players:
-                    if name.lower() in query.lower():
-                        player_name = name
-                        break
-            
-            # If we found a name, get the ID
             if player_name:
-                player_id = get_player_id_from_name(player_name)
-                if player_id:
-                    filtered_params["player_id"] = player_id
-                    print(f"  Added player_id {player_id} for {player_name}")
+                resolved = resolver.resolve(player_name)
+                if resolved and resolved.type == "player":
+                    filtered_params["player_id"] = resolved.id
+                    print(f"  Added player_id {resolved.id} for {resolved.name}")
                     missing_params.remove("player_id")
+            else:
+                # Dynamically resolve any player mentioned in query without hardcoded name lists
+                all_entities = resolver.resolve_all(query)
+                for ent in all_entities:
+                    if ent.type == "player":
+                        filtered_params["player_id"] = ent.id
+                        print(f"  Added player_id {ent.id} for {ent.name}")
+                        missing_params.remove("player_id")
+                        break
         
         # Only proceed with LLM if we still have missing parameters
         if missing_params:

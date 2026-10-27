@@ -4,6 +4,7 @@ Embeds all 135 endpoint capability_cards into data/endpoint_embeddings.npz.
 Provides fast cosine-similarity Top-K candidate endpoint retrieval at runtime.
 """
 import os
+import re
 import json
 import logging
 import numpy as np

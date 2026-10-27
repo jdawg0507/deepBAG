@@ -1,7 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Send, Bot, User, Sparkles, Flame, RefreshCcw, HelpCircle, Cpu } from 'lucide-react';
 import { ChartRenderer, parseChartMarkdownBlock } from './components/ChartRenderer';
+import { NetworkGraph } from './components/NetworkGraph';
+import { GenerativeSVG } from './components/GenerativeSVG';
 import { TelemetryBanner } from './components/TelemetryBanner';
 import { ReasoningAccordion } from './components/ReasoningAccordion';
 import './index.css';
@@ -121,18 +124,31 @@ function App() {
     sendQuery(input);
   };
 
-  // Custom Markdown Code Component for Chart.js Rendering
+  // Custom Markdown Code Component for Universal Generative Visualizations
   const MarkdownComponents = {
     code({ node, className, children, ...props }) {
       const match = /language-(\w+|[\w:]+)/.exec(className || '');
       const lang = match ? match[1].toLowerCase() : '';
 
-      if (lang === 'chart' || lang === 'json:chart') {
+      if (lang === 'chart' || lang === 'chartjs' || lang === 'json:chart') {
         const rawCode = String(children).replace(/\n$/, '');
         const chartConfig = parseChartMarkdownBlock(rawCode);
         if (chartConfig) {
           return <ChartRenderer config={chartConfig} />;
         }
+      }
+
+      if (lang === 'graph' || lang === 'network' || lang === 'json:graph' || lang === 'json:network') {
+        const rawCode = String(children).replace(/\n$/, '');
+        const graphConfig = parseChartMarkdownBlock(rawCode);
+        if (graphConfig) {
+          return <NetworkGraph config={graphConfig} />;
+        }
+      }
+
+      if (lang === 'svg' || lang === 'xml:svg') {
+        const rawCode = String(children).replace(/\n$/, '');
+        return <GenerativeSVG svgContent={rawCode} />;
       }
 
       return (
@@ -201,7 +217,7 @@ function App() {
                 {(msg.content || (msg.role === 'agent' && !msg.content && !isLoading)) && (
                   <div className="message-bubble">
                     {msg.role === 'agent' ? (
-                      <ReactMarkdown components={MarkdownComponents}>
+                      <ReactMarkdown remarkPlugins={[remarkGfm]} components={MarkdownComponents}>
                         {typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content, null, 2)}
                       </ReactMarkdown>
                     ) : (

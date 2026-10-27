@@ -36,33 +36,64 @@ CRITICAL MECHANICAL NUMBER LOCK RULES:
 2. Every numerical value (points, percentages, ratings, differentials) MUST be referenced ONLY using its exact claim ID in brackets, e.g. [C1], [C2], [C3].
 3. Code replaces these claim IDs with exact values and mechanically audits every numeral in the text. An unaligned number causes immediate rejection.
 4. For subjective or thesis questions, state the primary conclusion first, then present the strongest counter-evidence and sample limitations.
-5. If an ACH matrix is provided, explain which hypothesis is least-refuted and why competing explanations fail."""
+5. If an ACH matrix is provided, explain which hypothesis is least-refuted and why competing explanations fail.
+6. MANDATORY VISUALIZATION FOR COMPARISONS: If presenting comparative player data, longitudinal projections, or multi-metric archetypes, ALWAYS embed a valid Chart.js (```chartjs```), Network Graph (```graph```), or SVG (```svg```) visualization comparing the entities on their key metrics."""
 
-CHARTJS_INSTRUCTION = """
-CHART GENERATION REQUIREMENT:
-Since this query involves comparisons, trends, or leaderboard rankings, include an embedded Chart.js visualization.
-Embed a valid JSON specification inside a ```chartjs ``` code block formatted as:
+DYNAMIC_VISUALIZATION_INSTRUCTION = """
+VISUALIZATION REQUIREMENT:
+Provide an intuitive, engaging visual representation of the data for casual audiences alongside your narrative analysis.
+Choose the BEST visual archetype based on the data's semantic topology (never force an unsuitable format):
+
+Option 1: Statistical Distribution / Comparison (Chart.js)
+If displaying time-series trends, comparative rankings, or multi-metric profiles, embed a valid JSON specification in a ```chartjs ``` block.
+Supported types: 'bar', 'line', 'radar', 'doughnut', 'scatter', 'bubble'.
+Example for 2D correlation (e.g. Volume vs Efficiency / Usage vs True Shooting):
 ```chartjs
 {
-  "type": "bar",
+  "type": "scatter",
+  "title": "Volume vs Efficiency Correlation",
   "data": {
-    "labels": ["Player A", "Player B"],
     "datasets": [{
-      "label": "Points Per Game",
-      "data": [28.5, 26.2],
-      "backgroundColor": ["rgba(59, 130, 246, 0.8)", "rgba(16, 185, 129, 0.8)"]
+      "label": "Players",
+      "data": [
+        { "x": 28.5, "y": 61.2, "label": "Player A" },
+        { "x": 22.1, "y": 57.8, "label": "Player B" }
+      ]
     }]
   },
   "options": {
-    "responsive": true,
-    "plugins": {
-      "legend": { "position": "top" },
-      "title": { "display": true, "text": "Scoring Comparison" }
+    "scales": {
+      "x": { "title": { "display": true, "text": "Volume / Usage %" } },
+      "y": { "title": { "display": true, "text": "Efficiency / TS %" } }
     }
   }
 }
 ```
-Ensure the JSON is strictly valid. Always accompany the chart with analytical narrative text."""
+
+Option 2: Relational / Node-Link Graph
+If displaying connections, passing/assist networks, head-to-head match dynamics, or entity hierarchies, embed a valid JSON in a ```graph ``` block:
+```graph
+{
+  "title": "Passing & Assist Distribution Network",
+  "nodes": [
+    { "id": "A", "label": "Primary Distributor", "value": 10.5, "group": "distributor", "color": "#38bdf8", "subtext": "10.5 APG" },
+    { "id": "B", "label": "Key Finisher", "value": 7.2, "group": "finisher", "color": "#f97316", "subtext": "4.1 Assisted FG/g" }
+  ],
+  "links": [
+    { "source": "A", "target": "B", "weight": 4.1, "label": "4.1 AST/g" }
+  ]
+}
+```
+
+Option 3: Generative Vector Graphic (SVG)
+If displaying spatial coordinates (such as a half-court shot chart with plotted makes/misses), flowcharts, or custom diagrams, write clean, responsive SVG code in an ```svg ``` block:
+```svg
+<svg viewBox="0 0 500 320" xmlns="http://www.w3.org/2000/svg">
+  <!-- Clean styled vector graphics with dark-mode aesthetic -->
+</svg>
+```
+
+Always ensure the embedded JSON/SVG is strictly valid and accompanied by insightful analytical commentary."""
 
 def should_inject_chart(query: str, data: Any) -> bool:
     q_lower = query.lower()
@@ -121,8 +152,8 @@ class Synthesizer:
         
         system_instruction = BASE_ANALYST_PROMPT
         if inject_chart:
-            system_instruction += "\n" + CHARTJS_INSTRUCTION
-            yield {"type": "thought", "content": "Query/data qualifies for visual charting; injecting Chart.js spec."}
+            system_instruction += "\n" + DYNAMIC_VISUALIZATION_INSTRUCTION
+            yield {"type": "thought", "content": "Query/data qualifies for visual analytics; enabling dynamic visual grammar (charts, relational graphs, or vector graphics)."}
 
         trimmed_data = truncate_dataset_for_llm(data)
         has_upstream_error = isinstance(trimmed_data, dict) and "error" in trimmed_data
@@ -172,6 +203,28 @@ Provide a direct, complete, and insightful answer to the user's question."""
         4. Renders Scope Receipt, Narrative, ACH Matrix (if thesis), and Evidence Appendix.
         """
         target_model = model_name or self.default_model
+        
+        # Immediate Fail-Closed if no evidence claims exist
+        if len(evidence.all_claims()) == 0:
+            yield {
+                "type": "thought",
+                "content": "Zero verified claims registered in evidence ledger. Failing closed to prevent hallucination."
+            }
+            scope_receipt = ScopeReceipt.format_receipt(intent)
+            fail_payload = (
+                f"{scope_receipt}\n\n"
+                f"### ⚠️ Data Unavailable (Fail-Closed Enforcement)\n"
+                f"deepBAG was unable to retrieve verified data from the NBA API for this query "
+                f"(upstream API network timeout or empty dataset returned).\n\n"
+                f"**Integrity Guarantee**: Under deepBAG's strict mechanical number-lock architecture, "
+                f"zero numbers are synthesized without a cryptographically verified claim ledger.\n\n"
+                f"---\n"
+                f"### Statistical Provenance Appendix\n"
+                f"🛡️ **Number Lock: FAIL-CLOSED** (0 claims registered, 0 numbers generated)\n"
+            )
+            yield {"type": "final_answer", "content": fail_payload}
+            return
+
         yield {"type": "thought", "content": "Executing PAL-style synthesis with mechanical number lock..."}
         
         claims_table_md = evidence.render_markdown_table()
@@ -190,10 +243,12 @@ Registered Claim Ledger (Use ONLY these claim IDs: e.g. [C1], [C2]):
 
 Synthesize a clear, analytical answer. Reference statistics ONLY via claim IDs in brackets."""
 
+        system_instruction = NUMBER_LOCK_RESEARCH_PROMPT + "\n\n" + DYNAMIC_VISUALIZATION_INSTRUCTION
+
         # First generation attempt
         raw_synthesis = self.llm_client.generate(
             user_prompt=user_prompt,
-            system_prompt=NUMBER_LOCK_RESEARCH_PROMPT,
+            system_prompt=system_instruction,
             temperature=0.2,
             model_name=target_model
         )
@@ -214,7 +269,7 @@ Synthesize a clear, analytical answer. Reference statistics ONLY via claim IDs i
             retry_prompt = user_prompt + f"\n\nERROR IN PREVIOUS DRAFT: {reason}. You must NOT invent any numbers. Use only [C1], [C2]."
             raw_synthesis = self.llm_client.generate(
                 user_prompt=retry_prompt,
-                system_prompt=NUMBER_LOCK_RESEARCH_PROMPT,
+                system_prompt=system_instruction,
                 temperature=0.1,
                 model_name=target_model
             )

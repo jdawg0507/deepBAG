@@ -4,6 +4,7 @@ Utility functions for working with NBA API endpoints.
 import inspect
 import importlib
 import pkgutil
+import os
 import json
 from nba_api.stats import endpoints
 
@@ -165,8 +166,9 @@ def execute_api_call(endpoint_name, params):
         start_time = time.time()
         try:
             from core.nba_client import DEFAULT_HEADERS
+            timeout_sec = int(os.environ.get("NBA_API_TIMEOUT", "15"))
             try:
-                endpoint_instance = endpoint_class(headers=DEFAULT_HEADERS, timeout=15, **valid_params)
+                endpoint_instance = endpoint_class(headers=DEFAULT_HEADERS, timeout=timeout_sec, **valid_params)
             except TypeError:
                 endpoint_instance = endpoint_class(**valid_params)
             print(f"  Successfully created endpoint instance")
