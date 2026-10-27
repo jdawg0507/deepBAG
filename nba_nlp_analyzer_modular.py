@@ -15,7 +15,6 @@ from nlp.endpoint_selector import EndpointSelector
 from nlp.response_formatter import ResponseFormatter
 from nlp.tool_retriever import EndpointToolRetriever
 from nlp.tool_builder import EndpointToolBuilder
-from nlp.agent import NBAAgent
 from core.cache import RedisQueryCache
 from core.telemetry import TelemetryManager
 
@@ -45,7 +44,6 @@ class NBAQueryAnalyzer:
         print("Initializing Hybrid Architecture components...")
         self.tool_retriever = EndpointToolRetriever(self.endpoint_library)
         self.tool_builder = EndpointToolBuilder(self.endpoint_library)
-        self.agent = NBAAgent()
         self.cache = RedisQueryCache()
         from nlp.hybrid_router import HybridRouter
         from nlp.synthesizer import Synthesizer
@@ -363,33 +361,3 @@ class NBAQueryAnalyzer:
             print(f"Error extracting new parameters: {str(e)}")
         
         return new_params
-
-    def _create_data_summary(self, api_results):
-        """Create a summary of API results for analysis"""
-        summary = []
-        
-        for endpoint, result in api_results.items():
-            endpoint_summary = f"Data from {endpoint}:\n"
-            
-            if "error" in result:
-                endpoint_summary += f"  Error: {result['error']}\n"
-            else:
-                for table_name, table_data in result.items():
-                    row_count = len(table_data)
-                    endpoint_summary += f"  {table_name}: {row_count} records\n"
-                    
-                    if row_count > 0:
-                        # Get column names from first row
-                        columns = list(table_data[0].keys())
-                        endpoint_summary += f"  Columns: {', '.join(columns)}\n"
-                        
-                        # For analysis, include more data
-                        endpoint_summary += f"  Full data (first 20 rows):\n"
-                        for i in range(min(20, row_count)):
-                            endpoint_summary += f"    {json.dumps(table_data[i])}\n"
-            
-            summary.append(endpoint_summary)
-        
-        return "\n".join(summary)
-
-    # Example usage
